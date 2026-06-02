@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ring Reminder</string>
+    <string name="app_description">Alerts you when your phone is muted, on Do Not Disturb, or too quiet to hear incoming calls.</string>
+
+    <!-- Notification channel -->
+    <string name="notification_channel_name">Ring Reminder Service</string>
+    <string name="notification_channel_desc">Persistent service monitoring your ringer state</string>
+
+    <!-- Notification content -->
+    <string name="notif_title_active">Ring Reminder active</string>
+    <string name="notif_body_ok">Ringer is set correctly</string>
+    <string name="notif_title_muted">Phone is muted</string>
+    <string name="notif_title_dnd">Do Not Disturb is on</string>
+    <string name="notif_title_vibrate">Phone is in vibrate mode</string>
+    <string name="notif_title_low_volume">Ringer volume is low</string>
+    <string name="notif_body_fix">Tap to fix — you may miss calls</string>
+    <string name="action_fix_now">Fix now</string>
+
+    <!-- Main Activity -->
+    <string name="current_status">Current Status</string>
+    <string name="status_ringer_ok">Ringer is set correctly</string>
+    <string name="service_not_running">Service is not running — alerts are disabled</string>
+    <string name="start_service">Start service</string>
+    <string name="open_settings">Open Settings</string>
+    <string name="rerun_setup">Re-run permission setup</string>
+
+    <!-- Onboarding -->
+    <string name="step_of">Step %1$d of %2$d</string>
+    <string name="grant_permission">Grant permission</string>
+    <string name="skip_for_now">Skip for now</string>
+    <string name="next">Next</string>
+
+    <string name="onboard_notif_title">Notification permission</string>
+    <string name="onboard_notif_desc">Ring Reminder needs to show notifications to keep you informed about your ringer state and let you fix issues without opening the app.</string>
+    <string name="onboard_overlay_title">Draw over other apps</string>
+    <string name="onboard_overlay_desc">This allows Ring Reminder to show a small floating badge on your screen so you can see and fix ringer issues without switching apps.</string>
+    <string name="onboard_dnd_title">Do Not Disturb access</string>
+    <string name="onboard_dnd_desc">This lets Ring Reminder detect when Do Not Disturb is active and automatically turn it off so you can receive calls.</string>
+    <string name="onboard_battery_title">Battery optimisation</string>
+    <string name="onboard_battery_desc">Exempting Ring Reminder from battery optimisation ensures it keeps running reliably in the background, even when your phone has been idle.</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="section_general">General</string>
+    <string name="section_triggers">Alert triggers</string>
+    <string name="section_fix_actions">Fix actions</string>
+    <string name="section_permissions">Permissions</string>
+
+    <string name="master_enabled">Ring Reminder enabled</string>
+    <string name="master_enabled_desc">Monitor ringer state and show alerts</string>
+
+    <string name="trigger_silent">Silent mode</string>
+    <string name="trigger_silent_desc">Alert when phone is fully muted</string>
+    <string name="trigger_vibrate">Vibrate mode</string>
+    <string name="trigger_vibrate_desc">Alert when phone is vibrate-only</string>
+    <string name="trigger_dnd">Do Not Disturb</string>
+    <string name="trigger_dnd_desc">Alert when DND is blocking calls</string>
+    <string name="trigger_low_volume">Low ringer volume</string>
+    <string name="trigger_low_volume_desc">Alert when ringer volume is below threshold</string>
+    <string name="threshold_label">Alert threshold (% of max volume)</string>
+
+    <string name="fix_unmute">Unmute / set to normal</string>
+    <string name="fix_unmute_desc">Switch ringer mode back to normal</string>
+    <string name="fix_dnd">Disable Do Not Disturb</string>
+    <string name="fix_dnd_desc">Turn off DND when fixing</string>
+    <string name="fix_volume">Restore ringer volume</string>
+    <string name="fix_volume_desc">Set volume to the restore level below</string>
+    <string name="restore_level_label">Restore to (% of max volume)</string>
+
+    <string name="perm_overlay">Draw over other apps</string>
+    <string name="perm_dnd">Do Not Disturb access</string>
+    <string name="perm_battery">Battery optimisation exempt</string>
+    <string name="granted">Granted ✓</string>
+    <string name="not_granted">Not granted</string>
+    <string name="fix">Fix</string>
+</resources>
