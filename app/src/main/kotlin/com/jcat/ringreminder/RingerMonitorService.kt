@@ -2,7 +2,7 @@ package com.jcat.ringreminder
 
 import android.app.NotificationManager
 import android.app.Service
-import android.app.ServiceInfo
+import android.content.pm.ServiceInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -67,13 +67,23 @@ class RingerMonitorService : Service() {
         registerReceiver(ringerReceiver, filter)
         receiverRegistered = true
 
+        notificationHelper.cancelPausedNotification()
         startPolling()
         evaluateAndUpdate()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == NotificationHelper.ACTION_FIX_NOW) {
-            applyFixes()
+        when (intent?.action) {
+            NotificationHelper.ACTION_FIX_NOW -> applyFixes()
+            NotificationHelper.ACTION_PAUSE -> {
+                notificationManager.notify(
+                    NotificationHelper.PAUSED_NOTIFICATION_ID,
+                    notificationHelper.buildPausedNotification()
+                )
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf()
+                return START_NOT_STICKY
+            }
         }
         return START_STICKY
     }

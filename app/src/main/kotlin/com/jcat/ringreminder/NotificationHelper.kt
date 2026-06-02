@@ -13,7 +13,10 @@ class NotificationHelper(private val context: Context) {
     companion object {
         const val CHANNEL_ID = "ring_reminder_service"
         const val NOTIFICATION_ID = 1
+        const val PAUSED_NOTIFICATION_ID = 2
         const val ACTION_FIX_NOW = "com.jcat.ringreminder.ACTION_FIX_NOW"
+        const val ACTION_PAUSE = "com.jcat.ringreminder.ACTION_PAUSE"
+        const val ACTION_RESUME = "com.jcat.ringreminder.ACTION_RESUME"
     }
 
     private val notificationManager =
@@ -38,11 +41,18 @@ class NotificationHelper(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val pauseIntent = PendingIntent.getService(
+            context, 2,
+            Intent(context, RingerMonitorService::class.java).apply { action = ACTION_PAUSE },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
             .setOngoing(true)
             .setContentIntent(contentIntent)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .addAction(0, context.getString(R.string.action_pause), pauseIntent)
 
         if (result.isAlertActive) {
             val (title, color) = when (result.primaryCondition) {
@@ -58,11 +68,9 @@ class NotificationHelper(private val context: Context) {
                     context.getString(R.string.notif_title_active) to 0xFF43A047.toInt()
             }
 
-            val fixIntent = Intent(context, RingerMonitorService::class.java).apply {
-                action = ACTION_FIX_NOW
-            }
             val fixPendingIntent = PendingIntent.getService(
-                context, 1, fixIntent,
+                context, 1,
+                Intent(context, RingerMonitorService::class.java).apply { action = ACTION_FIX_NOW },
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
@@ -80,7 +88,28 @@ class NotificationHelper(private val context: Context) {
         return builder.build()
     }
 
+    fun buildPausedNotification(): Notification {
+        val resumePendingIntent = PendingIntent.getForegroundService(
+            context, 3,
+            Intent(context, RingerMonitorService::class.java).apply { action = ACTION_RESUME },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        return NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.getString(R.string.notif_title_paused))
+            .setContentText(context.getString(R.string.notif_body_paused))
+            .setContentIntent(resumePendingIntent)
+            .addAction(0, context.getString(R.string.action_resume), resumePendingIntent)
+            .setAutoCancel(false)
+            .build()
+    }
+
     fun updateNotification(result: EvaluationResult) {
         notificationManager.notify(NOTIFICATION_ID, buildServiceNotification(result))
+    }
+
+    fun cancelPausedNotification() {
+        notificationManager.cancel(PAUSED_NOTIFICATION_ID)
     }
 }

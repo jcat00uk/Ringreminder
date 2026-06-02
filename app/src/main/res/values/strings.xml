@@ -16,6 +16,10 @@
     <string name="notif_title_low_volume">Ringer volume is low</string>
     <string name="notif_body_fix">Tap to fix — you may miss calls</string>
     <string name="action_fix_now">Fix now</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="notif_title_paused">Ring Reminder paused</string>
+    <string name="notif_body_paused">Ringer monitoring is paused — tap to resume</string>
 
     <!-- Main Activity -->
     <string name="current_status">Current Status</string>

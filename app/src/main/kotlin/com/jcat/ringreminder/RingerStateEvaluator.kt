@@ -49,7 +49,8 @@ class RingerStateEvaluator {
         if (triggerVibrate && state.ringerMode == RINGER_MODE_VIBRATE) {
             conditions.add(AlertCondition.VIBRATE)
         }
-        if (triggerLowVolume && state.maxRingerVolume > 0) {
+        if (triggerLowVolume && state.ringerMode != RINGER_MODE_SILENT
+                && state.ringerMode != RINGER_MODE_VIBRATE && state.maxRingerVolume > 0) {
             val volumePercent = (state.ringerVolume * 100) / state.maxRingerVolume
             if (volumePercent < thresholdVolumePercent) {
                 conditions.add(AlertCondition.LOW_VOLUME)

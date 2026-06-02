@@ -1,6 +1,7 @@
 package com.jcat.ringreminder
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.provider.Settings
@@ -19,8 +20,11 @@ class OverlayBadgeManager(
 ) {
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private var rootView: View? = null
-    private var isExpanded = false
     private val prefs = PrefsHelper(context)
+
+    private enum class State { COLLAPSED, EXPANDED, CONFIRMING }
+    private var state = State.COLLAPSED
+    private var stateBeforeConfirm = State.COLLAPSED
 
     private var isDragging = false
     private var initialX = 0
@@ -30,7 +34,7 @@ class OverlayBadgeManager(
     private lateinit var layoutParams: WindowManager.LayoutParams
 
     private val dragThreshold = 12f
-    private val cornerRadius get() = 24f * context.resources.displayMetrics.density
+    private val pillRadius get() = 24f * context.resources.displayMetrics.density
 
     fun show(result: EvaluationResult) {
         if (!Settings.canDrawOverlays(context)) return
@@ -43,9 +47,6 @@ class OverlayBadgeManager(
         val view = LayoutInflater.from(context).inflate(R.layout.overlay_badge, null)
         rootView = view
 
-        val savedX = prefs.badgeX
-        val savedY = prefs.badgeY
-
         layoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -54,11 +55,13 @@ class OverlayBadgeManager(
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = if (savedX >= 0) savedX.toInt() else 50
-            y = if (savedY >= 0) savedY.toInt() else 900
+            val sx = prefs.badgeX
+            val sy = prefs.badgeY
+            x = if (sx >= 0) sx.toInt() else 50
+            y = if (sy >= 0) sy.toInt() else 900
         }
 
-        setupTouchAndClick(view)
+        setupInteractions(view)
         updateContent(result)
 
         try {
@@ -70,22 +73,14 @@ class OverlayBadgeManager(
 
     fun hide() {
         rootView?.let { view ->
-            try {
-                windowManager.removeView(view)
-            } catch (_: Exception) {}
+            try { windowManager.removeView(view) } catch (_: Exception) {}
             rootView = null
         }
-        isExpanded = false
+        state = State.COLLAPSED
     }
 
     private fun updateContent(result: EvaluationResult) {
         val view = rootView ?: return
-
-        val pillText = view.findViewById<TextView>(R.id.pill_text)
-        val multiDot = view.findViewById<View>(R.id.multi_dot)
-        val collapsedBadge = view.findViewById<View>(R.id.collapsed_badge)
-        val expandedTitle = view.findViewById<TextView>(R.id.expanded_title)
-        val expandedDesc = view.findViewById<TextView>(R.id.expanded_description)
 
         val (text, bgColor) = when (result.primaryCondition) {
             AlertCondition.SILENT -> "Muted" to 0xFFE53935.toInt()
@@ -107,30 +102,59 @@ class OverlayBadgeManager(
             null -> "" to ""
         }
 
-        val drawable = GradientDrawable().apply {
+        // Pill background (rounded shape, colour-coded)
+        view.findViewById<View>(R.id.collapsed_badge).background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            cornerRadius = this@OverlayBadgeManager.cornerRadius
+            cornerRadius = pillRadius
             setColor(bgColor)
         }
-        collapsedBadge.background = drawable
+        view.findViewById<TextView>(R.id.pill_text).text = text
+        view.findViewById<View>(R.id.multi_dot).visibility =
+            if (result.hasMultipleIssues) View.VISIBLE else View.GONE
 
-        pillText.text = text
-        multiDot.visibility = if (result.hasMultipleIssues) View.VISIBLE else View.GONE
-        expandedTitle.text = expTitle
-        expandedDesc.text = expDesc
+        // Card header colour strip
+        view.findViewById<View>(R.id.card_header).setBackgroundColor(bgColor)
+        view.findViewById<TextView>(R.id.expanded_title).text = expTitle
+        view.findViewById<TextView>(R.id.expanded_description).text = expDesc
 
-        view.findViewById<Button>(R.id.btn_fix).setOnClickListener {
-            onFixRequested()
-            collapse(view)
-        }
-        view.findViewById<Button>(R.id.btn_dismiss).setOnClickListener {
-            hide()
-        }
+        // Fix button tinted to match the condition colour
+        view.findViewById<Button>(R.id.btn_fix)
+            .backgroundTintList = ColorStateList.valueOf(bgColor)
     }
 
-    private fun setupTouchAndClick(view: View) {
+    private fun setupInteractions(view: View) {
         val collapsedBadge = view.findViewById<View>(R.id.collapsed_badge)
 
+        // X on collapsed pill → ask for confirmation
+        view.findViewById<View>(R.id.btn_close_pill).setOnClickListener {
+            showConfirmation(view)
+        }
+
+        // X on expanded card → ask for confirmation
+        view.findViewById<View>(R.id.btn_close_card).setOnClickListener {
+            showConfirmation(view)
+        }
+
+        // Fix button
+        view.findViewById<View>(R.id.btn_fix).setOnClickListener {
+            onFixRequested()
+            transitionTo(view, State.COLLAPSED)
+        }
+
+        // Confirmation: cancel → always collapse back to pill (not re-open the card)
+        view.findViewById<View>(R.id.btn_cancel_dismiss).setOnClickListener {
+            transitionTo(view, State.COLLAPSED)
+        }
+
+        // Confirmation: hide → dismiss entirely until next ringer change
+        view.findViewById<View>(R.id.btn_confirm_dismiss).setOnClickListener {
+            hide()
+        }
+
+        // Drag / tap-to-expand on the pill.
+        // btn_close_pill is a child of collapsed_badge and is clickable, so it consumes
+        // its own touch events before the parent's onTouchListener ever sees them —
+        // no manual hit-testing needed here.
         collapsedBadge.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -150,15 +174,13 @@ class OverlayBadgeManager(
                     if (isDragging) {
                         layoutParams.x = initialX + dx.toInt()
                         layoutParams.y = initialY + dy.toInt()
-                        try {
-                            windowManager.updateViewLayout(view, layoutParams)
-                        } catch (_: Exception) {}
+                        try { windowManager.updateViewLayout(view, layoutParams) } catch (_: Exception) {}
                     }
                     true
                 }
                 MotionEvent.ACTION_UP -> {
                     if (!isDragging) {
-                        if (!isExpanded) expand(view)
+                        transitionTo(view, State.EXPANDED)
                     } else {
                         prefs.badgeX = layoutParams.x.toFloat()
                         prefs.badgeY = layoutParams.y.toFloat()
@@ -171,24 +193,26 @@ class OverlayBadgeManager(
         }
     }
 
-    private fun expand(view: View) {
-        isExpanded = true
-        view.findViewById<View>(R.id.collapsed_badge).visibility = View.GONE
-        view.findViewById<View>(R.id.expanded_card).visibility = View.VISIBLE
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-        try {
-            windowManager.updateViewLayout(view, layoutParams)
-        } catch (_: Exception) {}
+    private fun showConfirmation(view: View) {
+        stateBeforeConfirm = state
+        transitionTo(view, State.CONFIRMING)
     }
 
-    private fun collapse(view: View) {
-        isExpanded = false
-        view.findViewById<View>(R.id.collapsed_badge).visibility = View.VISIBLE
-        view.findViewById<View>(R.id.expanded_card).visibility = View.GONE
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-        try {
-            windowManager.updateViewLayout(view, layoutParams)
-        } catch (_: Exception) {}
+    private fun transitionTo(view: View, newState: State) {
+        state = newState
+        view.findViewById<View>(R.id.collapsed_badge).visibility =
+            if (newState == State.COLLAPSED) View.VISIBLE else View.GONE
+        view.findViewById<View>(R.id.expanded_card).visibility =
+            if (newState == State.EXPANDED) View.VISIBLE else View.GONE
+        view.findViewById<View>(R.id.confirmation_card).visibility =
+            if (newState == State.CONFIRMING) View.VISIBLE else View.GONE
+
+        layoutParams.flags = when (newState) {
+            State.COLLAPSED -> WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            State.EXPANDED, State.CONFIRMING ->
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+        }
+        try { windowManager.updateViewLayout(view, layoutParams) } catch (_: Exception) {}
     }
 }
