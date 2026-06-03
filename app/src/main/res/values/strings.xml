@@ -100,4 +100,29 @@
     <string name="schedule_to">To</string>
     <string name="overlay_theme">Overlay theme</string>
     <string name="overlay_theme_desc">Appearance of the floating badge</string>
+
+    <!-- Feature 1: Split notification channels -->
+    <string name="notification_alert_channel_name">Ring Reminder Alerts</string>
+    <string name="notification_alert_channel_desc">Heads-up alerts when your ringer is muted or blocked</string>
+
+    <!-- Feature 2: Haptic feedback -->
+    <string name="haptic_on_fix">Haptic feedback on fix</string>
+    <string name="haptic_on_fix_desc">Short vibration when fix is applied</string>
+
+    <!-- Feature 3: Timed snooze -->
+    <string name="snooze_question">Snooze alert for how long?</string>
+    <string name="snooze_30min">30 min</string>
+    <string name="snooze_1hour">1 hour</string>
+    <string name="snooze_2hours">2 hours</string>
+    <string name="snooze_until_changed">Until changed</string>
+
+    <!-- Feature 4: Repeat nudge -->
+    <string name="section_alert_behaviour">Alert behaviour</string>
+    <string name="nudge_enabled">Re-alert if not fixed</string>
+    <string name="nudge_enabled_desc">Show alert again after snoozing if still not fixed</string>
+    <string name="nudge_interval_label">Re-alert after</string>
+
+    <!-- Feature 5: Show all conditions -->
+    <string name="show_all_conditions">Show all active issues</string>
+    <string name="show_all_conditions_desc">Show other active issues alongside the main alert. Note: DND suppresses volume readings, so DND and Low volume won\'t appear together.</string>
 </resources>

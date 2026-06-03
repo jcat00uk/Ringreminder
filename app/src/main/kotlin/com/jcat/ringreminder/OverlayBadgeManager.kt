@@ -6,14 +6,17 @@ import android.content.res.ColorStateList
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.provider.Settings
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import com.google.android.material.chip.Chip
 import kotlin.math.abs
 
 class OverlayBadgeManager(
@@ -41,9 +44,11 @@ class OverlayBadgeManager(
     private val dragThreshold = 12f
     private val pillRadius get() = 24f * context.resources.displayMetrics.density
 
+    // Tracks current result so snooze chips can reference it
+    private var currentResult: EvaluationResult? = null
+
     fun show(result: EvaluationResult) {
         if (!Settings.canDrawOverlays(context)) {
-            // Permission revoked while badge was on screen — remove it
             if (rootView != null) hide()
             return
         }
@@ -53,7 +58,9 @@ class OverlayBadgeManager(
             return
         }
 
-        val view = LayoutInflater.from(context).inflate(R.layout.overlay_badge, null)
+        // ContextThemeWrapper ensures Material components inflate correctly from a Service context
+        val themedCtx = ContextThemeWrapper(context, R.style.Theme_RingReminder)
+        val view = LayoutInflater.from(themedCtx).inflate(R.layout.overlay_badge, null)
         rootView = view
 
         layoutParams = WindowManager.LayoutParams(
@@ -91,6 +98,7 @@ class OverlayBadgeManager(
 
     private fun updateContent(result: EvaluationResult) {
         val view = rootView ?: return
+        currentResult = result
         val bgColor = conditionColor(result.primaryCondition, prefs.overlayTheme)
 
         val (pillText, expTitle, expDesc) = when (result.primaryCondition) {
@@ -135,6 +143,30 @@ class OverlayBadgeManager(
             shape = GradientDrawable.OVAL
             setColor(bgColor)
         }
+
+        // Feature 5: secondary conditions chip group
+        val chipGroup = view.findViewById<ViewGroup>(R.id.chip_group_secondary_conditions)
+        if (prefs.showAllConditions && result.hasMultipleIssues) {
+            chipGroup.removeAllViews()
+            val lightBg = (bgColor and 0x00FFFFFF) or 0x33000000.toInt()
+            val themedCtx = ContextThemeWrapper(context, R.style.Theme_RingReminder)
+            result.activeConditions.filter { it != result.primaryCondition }.forEach { condition ->
+                val label = when (condition) {
+                    AlertCondition.SILENT -> "Muted"
+                    AlertCondition.DND -> "DND on"
+                    AlertCondition.VIBRATE -> "Vibrate"
+                    AlertCondition.LOW_VOLUME -> "Low volume"
+                }
+                chipGroup.addView(Chip(themedCtx).apply {
+                    text = label
+                    isCheckable = false
+                    chipBackgroundColor = ColorStateList.valueOf(lightBg)
+                })
+            }
+            chipGroup.visibility = View.VISIBLE
+        } else {
+            chipGroup.visibility = View.GONE
+        }
     }
 
     private fun conditionColor(condition: AlertCondition?, theme: String): Int = when (theme) {
@@ -153,6 +185,34 @@ class OverlayBadgeManager(
             AlertCondition.LOW_VOLUME -> 0xFFFF6D00.toInt()
             null -> 0xFF00E676.toInt()
         }
+        "pastel" -> when (condition) {
+            AlertCondition.SILENT -> 0xFFEF9A9A.toInt()
+            AlertCondition.DND -> 0xFFCE93D8.toInt()
+            AlertCondition.VIBRATE -> 0xFFB0BEC5.toInt()
+            AlertCondition.LOW_VOLUME -> 0xFFFFCC80.toInt()
+            null -> 0xFFA5D6A7.toInt()
+        }
+        "amoled" -> when (condition) {
+            AlertCondition.SILENT -> 0xFF3B0000.toInt()
+            AlertCondition.DND -> 0xFF1A0030.toInt()
+            AlertCondition.VIBRATE -> 0xFF0D1317.toInt()
+            AlertCondition.LOW_VOLUME -> 0xFF2B1000.toInt()
+            null -> 0xFF001200.toInt()
+        }
+        "warm" -> when (condition) {
+            AlertCondition.SILENT -> 0xFFBF360C.toInt()
+            AlertCondition.DND -> 0xFFE65100.toInt()
+            AlertCondition.VIBRATE -> 0xFFF57C00.toInt()
+            AlertCondition.LOW_VOLUME -> 0xFFFFA000.toInt()
+            null -> 0xFF558B2F.toInt()
+        }
+        "cool" -> when (condition) {
+            AlertCondition.SILENT -> 0xFF004D40.toInt()
+            AlertCondition.DND -> 0xFF0D47A1.toInt()
+            AlertCondition.VIBRATE -> 0xFF01579B.toInt()
+            AlertCondition.LOW_VOLUME -> 0xFF006064.toInt()
+            null -> 0xFF1B5E20.toInt()
+        }
         else -> when (condition) {
             AlertCondition.SILENT -> 0xFFE53935.toInt()
             AlertCondition.DND -> 0xFF8E24AA.toInt()
@@ -160,6 +220,14 @@ class OverlayBadgeManager(
             AlertCondition.LOW_VOLUME -> 0xFFEF6C00.toInt()
             null -> 0xFF43A047.toInt()
         }
+    }
+
+    private fun notifyService() {
+        context.startService(
+            Intent(context, RingerMonitorService::class.java).apply {
+                action = RingerMonitorService.ACTION_REFRESH
+            }
+        )
     }
 
     private fun setupInteractions(view: View) {
@@ -184,9 +252,28 @@ class OverlayBadgeManager(
                 transitionTo(view, State.COLLAPSED)
             }
         }
-        view.findViewById<View>(R.id.btn_confirm_dismiss).setOnClickListener {
-            cameFromDocked = false
+
+        // Feature 3: snooze chip listeners
+        view.findViewById<View>(R.id.chip_snooze_30min).setOnClickListener {
+            prefs.snoozeUntilMs = System.currentTimeMillis() + 30 * 60_000L
             hide()
+            notifyService()
+        }
+        view.findViewById<View>(R.id.chip_snooze_1hour).setOnClickListener {
+            prefs.snoozeUntilMs = System.currentTimeMillis() + 60 * 60_000L
+            hide()
+            notifyService()
+        }
+        view.findViewById<View>(R.id.chip_snooze_2hours).setOnClickListener {
+            prefs.snoozeUntilMs = System.currentTimeMillis() + 2 * 60 * 60_000L
+            hide()
+            notifyService()
+        }
+        view.findViewById<View>(R.id.chip_snooze_until_changed).setOnClickListener {
+            prefs.snoozeUntilMs = Long.MAX_VALUE
+            prefs.snoozedCondition = currentResult?.primaryCondition?.name ?: ""
+            hide()
+            notifyService()
         }
 
         // Gear icon: collapse overlay then open Settings
@@ -198,9 +285,6 @@ class OverlayBadgeManager(
             )
         }
 
-        // Collapsed pill: drag or tap to expand
-        // btn_close_pill is a clickable child of collapsed_badge so it consumes
-        // its own touch before the parent's onTouchListener fires — no hit-testing needed.
         collapsedBadge.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -243,7 +327,6 @@ class OverlayBadgeManager(
             }
         }
 
-        // Docked nub: vertical drag repositions along edge; horizontal drag un-docks; tap expands
         view.findViewById<View>(R.id.docked_nub).setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -277,15 +360,12 @@ class OverlayBadgeManager(
                         val screenWidth = context.resources.displayMetrics.widthPixels
                         when {
                             abs(dx) <= dragThreshold -> {
-                                // Purely vertical — stay docked, save new y position
                                 preDockY = layoutParams.y
                             }
                             event.rawX < screenWidth * 0.25f || event.rawX > screenWidth * 0.75f -> {
-                                // Dragged to an edge — re-snap to whichever side
                                 snapToEdge(view, snapRight = event.rawX > screenWidth / 2f)
                             }
                             else -> {
-                                // Dragged to free area — un-dock as collapsed pill
                                 prefs.badgeX = layoutParams.x.toFloat()
                                 prefs.badgeY = layoutParams.y.toFloat()
                                 transitionTo(view, State.COLLAPSED)

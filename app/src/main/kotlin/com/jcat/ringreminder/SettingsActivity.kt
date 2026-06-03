@@ -34,6 +34,7 @@ class SettingsActivity : AppCompatActivity() {
         prefs = PrefsHelper(this)
         setupMasterToggle()
         setupTriggers()
+        setupAlertBehaviour()
         setupFixActions()
         setupProFeatures()
         updatePermissionsSection()
@@ -92,6 +93,41 @@ class SettingsActivity : AppCompatActivity() {
                 setOnClickListener { prefs.thresholdVolumePercent = pct; notifyService() }
             })
         }
+
+        // Feature 5: show all conditions
+        binding.switchShowAllConditions.isChecked = prefs.showAllConditions
+        binding.switchShowAllConditions.setOnCheckedChangeListener { _, v ->
+            prefs.showAllConditions = v; notifyService()
+        }
+
+        // Feature 2: haptic feedback
+        binding.switchHapticOnFix.isChecked = prefs.hapticOnFix
+        binding.switchHapticOnFix.setOnCheckedChangeListener { _, v -> prefs.hapticOnFix = v }
+    }
+
+    private fun setupAlertBehaviour() {
+        // Feature 4: repeat nudge
+        binding.switchNudgeEnabled.isChecked = prefs.nudgeEnabled
+        binding.switchNudgeEnabled.setOnCheckedChangeListener { _, v ->
+            prefs.nudgeEnabled = v
+            refreshNudgeIntervalState()
+            notifyService()
+        }
+
+        listOf(5, 10, 15, 30).forEach { min ->
+            binding.chipGroupNudgeInterval.addView(Chip(this).apply {
+                text = "$min min"
+                isCheckable = true
+                isChecked = prefs.nudgeIntervalMinutes == min
+                setOnClickListener { prefs.nudgeIntervalMinutes = min; notifyService() }
+            })
+        }
+
+        refreshNudgeIntervalState()
+    }
+
+    private fun refreshNudgeIntervalState() {
+        binding.layoutNudgeInterval.alpha = if (prefs.nudgeEnabled) 1f else 0.4f
     }
 
     private fun setupFixActions() {
@@ -151,7 +187,10 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // Theme chips
-        listOf("default" to "Default", "dark" to "Dark", "mono" to "Mono", "vibrant" to "Vibrant")
+        listOf(
+            "default" to "Default", "dark" to "Dark", "mono" to "Mono", "vibrant" to "Vibrant",
+            "pastel" to "Pastel", "amoled" to "Amoled", "warm" to "Warm", "cool" to "Cool"
+        )
             .forEach { (id, label) ->
                 binding.chipGroupTheme.addView(Chip(this).apply {
                     text = label

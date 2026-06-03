@@ -2,9 +2,10 @@ package com.jcat.ringreminder
 
 import android.app.NotificationManager
 import android.app.Service
+import android.content.ComponentName
+import android.content.Context
 import android.content.pm.ServiceInfo
 import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
@@ -12,11 +13,17 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.service.quicksettings.TileService
 
 class RingerMonitorService : Service() {
 
     companion object {
         @Volatile var isRunning = false
+        @Volatile var isPaused = false
+        @Volatile var lastResult: EvaluationResult? = null
         const val ACTION_REFRESH = "com.jcat.ringreminder.ACTION_REFRESH"
     }
 
@@ -40,6 +47,7 @@ class RingerMonitorService : Service() {
     override fun onCreate() {
         super.onCreate()
         isRunning = true
+        isPaused = false
 
         prefs = PrefsHelper(this)
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -49,8 +57,7 @@ class RingerMonitorService : Service() {
 
         notificationHelper.createChannel()
 
-        // Start foreground immediately to satisfy Android 8+ requirement
-        val placeholder = notificationHelper.buildServiceNotification(EvaluationResult(emptyList(), null))
+        val placeholder = notificationHelper.buildServiceNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(
                 NotificationHelper.NOTIFICATION_ID,
@@ -78,6 +85,7 @@ class RingerMonitorService : Service() {
             NotificationHelper.ACTION_FIX_NOW -> applyFixes()
             ACTION_REFRESH -> evaluateAndUpdate()
             NotificationHelper.ACTION_PAUSE -> {
+                isPaused = true
                 notificationManager.notify(
                     NotificationHelper.PAUSED_NOTIFICATION_ID,
                     notificationHelper.buildPausedNotification()
@@ -142,12 +150,65 @@ class RingerMonitorService : Service() {
         } else {
             EvaluationResult(emptyList(), null)
         }
-        notificationHelper.updateNotification(result)
+
+        // Service notification is always shown (persistent foreground)
+        notificationManager.notify(
+            NotificationHelper.NOTIFICATION_ID,
+            notificationHelper.buildServiceNotification()
+        )
+
+        val now = System.currentTimeMillis()
+
         if (result.isAlertActive) {
-            overlayBadgeManager.show(result)
+            if (prefs.alertFirstSeenMs == 0L) prefs.alertFirstSeenMs = now
+
+            var snoozed = isSnoozed(result)
+            // Feature 4: nudge — clear snooze if nudge interval elapsed
+            if (snoozed && prefs.nudgeEnabled && prefs.alertFirstSeenMs > 0L) {
+                if (now - prefs.alertFirstSeenMs >= prefs.nudgeIntervalMinutes * 60_000L) {
+                    clearSnooze()
+                    snoozed = false
+                }
+            }
+
+            if (snoozed) {
+                overlayBadgeManager.hide()
+                notificationHelper.cancelAlertNotification()
+            } else {
+                notificationManager.notify(
+                    NotificationHelper.ALERT_NOTIFICATION_ID,
+                    notificationHelper.buildAlertNotification(result)
+                )
+                overlayBadgeManager.show(result)
+            }
         } else {
+            prefs.alertFirstSeenMs = 0L
+            clearSnooze()
             overlayBadgeManager.hide()
+            notificationHelper.cancelAlertNotification()
         }
+
+        lastResult = result
+
+        // Feature 6: notify QS tile
+        TileService.requestListeningState(this, ComponentName(this, QuickSettingsTile::class.java))
+
+        // Feature 7: update home screen widgets
+        ReminderWidget.updateAll(this, result)
+    }
+
+    private fun isSnoozed(result: EvaluationResult): Boolean {
+        val snoozeUntil = prefs.snoozeUntilMs
+        if (snoozeUntil == 0L) return false
+        if (snoozeUntil == Long.MAX_VALUE) {
+            return result.primaryCondition?.name == prefs.snoozedCondition
+        }
+        return System.currentTimeMillis() < snoozeUntil
+    }
+
+    private fun clearSnooze() {
+        prefs.snoozeUntilMs = 0L
+        prefs.snoozedCondition = ""
     }
 
     private fun isWithinSchedule(): Boolean {
@@ -159,12 +220,27 @@ class RingerMonitorService : Service() {
         return if (startMinutes <= endMinutes) {
             nowMinutes in startMinutes..endMinutes
         } else {
-            // Overnight schedule e.g. 22:00–08:00
             nowMinutes >= startMinutes || nowMinutes <= endMinutes
         }
     }
 
     fun applyFixes() {
+        // Feature 2: haptic feedback
+        if (prefs.hapticOnFix) {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    val vm = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+                    vm.defaultVibrator.vibrate(
+                        VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    val v = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                    v.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+                }
+            } catch (_: Exception) {}
+        }
+
         if (prefs.fixUnmute) {
             try {
                 audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL

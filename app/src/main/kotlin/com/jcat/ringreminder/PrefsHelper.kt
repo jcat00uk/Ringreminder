@@ -93,4 +93,36 @@ class PrefsHelper(context: Context) {
     var overlayTheme: String
         get() = prefs.getString("overlay_theme", "default") ?: "default"
         set(v) = prefs.edit().putString("overlay_theme", v).apply()
+
+    // Feature 2: Haptic feedback
+    var hapticOnFix: Boolean
+        get() = prefs.getBoolean("haptic_on_fix", true)
+        set(v) = prefs.edit().putBoolean("haptic_on_fix", v).apply()
+
+    // Feature 3: Timed snooze
+    var snoozeUntilMs: Long
+        get() = prefs.getLong("snooze_until_ms", 0L)
+        set(v) = prefs.edit().putLong("snooze_until_ms", v).apply()
+
+    var snoozedCondition: String
+        get() = prefs.getString("snoozed_condition", "") ?: ""
+        set(v) = prefs.edit().putString("snoozed_condition", v).apply()
+
+    // Feature 4: Repeat nudge
+    var nudgeEnabled: Boolean
+        get() = prefs.getBoolean("nudge_enabled", false)
+        set(v) = prefs.edit().putBoolean("nudge_enabled", v).apply()
+
+    var nudgeIntervalMinutes: Int
+        get() = prefs.getInt("nudge_interval_minutes", 10)
+        set(v) = prefs.edit().putInt("nudge_interval_minutes", v).apply()
+
+    var alertFirstSeenMs: Long
+        get() = prefs.getLong("alert_first_seen_ms", 0L)
+        set(v) = prefs.edit().putLong("alert_first_seen_ms", v).apply()
+
+    // Feature 5: Show all active conditions
+    var showAllConditions: Boolean
+        get() = prefs.getBoolean("show_all_conditions", false)
+        set(v) = prefs.edit().putBoolean("show_all_conditions", v).apply()
 }
