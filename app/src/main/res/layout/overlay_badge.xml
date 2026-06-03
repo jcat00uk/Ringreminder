@@ -13,7 +13,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
-        android:paddingEnd="4dp"
+        android:paddingEnd="12dp"
         android:elevation="8dp">
 
         <TextView
@@ -32,28 +32,12 @@
             android:background="@drawable/dot_indicator"
             android:visibility="gone" />
 
-        <!-- Subtle separator before X -->
-        <View
-            android:layout_width="1dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="10dp"
-            android:background="#50FFFFFF" />
-
-        <ImageButton
-            android:id="@+id/btn_close_pill"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginStart="2dp"
-            android:src="@drawable/ic_close"
-            android:background="@android:color/transparent"
-            android:padding="9dp"
-            android:contentDescription="Dismiss" />
     </LinearLayout>
 
     <!-- STATE 2: Expanded card -->
     <androidx.cardview.widget.CardView
         android:id="@+id/expanded_card"
-        android:layout_width="280dp"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         app:cardCornerRadius="16dp"
         app:cardElevation="12dp"
@@ -65,7 +49,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Coloured header (background set in code) -->
+            <!-- Coloured header -->
             <LinearLayout
                 android:id="@+id/card_header"
                 android:layout_width="match_parent"
@@ -123,7 +107,7 @@
                     android:textColor="#555555"
                     android:lineSpacingMultiplier="1.4" />
 
-                <!-- Feature 5: secondary condition chips (populated in code) -->
+                <!-- Secondary condition chips (Feature 5) -->
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chip_group_secondary_conditions"
                     android:layout_width="wrap_content"
@@ -132,93 +116,157 @@
                     android:visibility="gone"
                     app:chipSpacingHorizontal="4dp" />
 
+                <!-- Primary fix button — wrap_content height so long labels like "Dismiss Do Not Disturb" don't clip -->
                 <Button
                     android:id="@+id/btn_fix"
                     style="@style/Widget.Material3.Button"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="16dp"
-                    android:textSize="16sp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="52dp"
+                    android:layout_marginTop="14dp"
+                    android:textSize="15sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.02" />
+                    android:letterSpacing="0.02"
+                    android:maxLines="2" />
+
+                <!-- Snooze alerts row -->
+                <LinearLayout
+                    android:id="@+id/row_snooze"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="6dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/snooze_alerts_for"
+                        android:textSize="14sp"
+                        android:textColor="#555555" />
+
+                    <TextView
+                        android:id="@+id/txt_snooze_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/snooze_30min"
+                        android:textSize="14sp"
+                        android:textColor="?attr/colorPrimary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" ▼"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorPrimary" />
+                </LinearLayout>
+
+                <!-- Scheduled auto-fix countdown (shown when one-shot auto-fix is pending) -->
+                <LinearLayout
+                    android:id="@+id/row_auto_fix_scheduled"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="2dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/txt_auto_fix_scheduled"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="13sp"
+                        android:textColor="#777777"
+                        android:fontFamily="sans-serif-italic" />
+
+                    <Button
+                        android:id="@+id/btn_cancel_auto_fix"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/overlay_cancel"
+                        android:textSize="12sp"
+                        android:minHeight="0dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp" />
+                </LinearLayout>
+
+                <!-- Daily auto-unmute info row (shown when daily schedule is set) -->
+                <LinearLayout
+                    android:id="@+id/row_daily_unmute"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="2dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/txt_daily_unmute"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="13sp"
+                        android:textColor="#777777"
+                        android:fontFamily="sans-serif-italic" />
+
+                    <Button
+                        android:id="@+id/btn_daily_unmute_change"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/overlay_change"
+                        android:textSize="12sp"
+                        android:minHeight="0dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp" />
+                </LinearLayout>
+
+                <!-- Auto-fix in row (Pro only, shown/hidden in code) -->
+                <LinearLayout
+                    android:id="@+id/row_auto_fix"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/auto_fix_in"
+                        android:textSize="14sp"
+                        android:textColor="#555555" />
+
+                    <TextView
+                        android:id="@+id/txt_auto_fix_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/snooze_1hour"
+                        android:textSize="14sp"
+                        android:textColor="?attr/colorPrimary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" ▼"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorPrimary" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- STATE 3: Inline confirmation -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/confirmation_card"
-        android:layout_width="280dp"
-        android:layout_height="wrap_content"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="12dp"
-        app:cardBackgroundColor="#FFFFFFFF"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/snooze_question"
-                android:textSize="15sp"
-                android:textColor="#1A1A1A"
-                android:lineSpacingMultiplier="1.3" />
-
-            <!-- Feature 3: snooze duration chips -->
-            <com.google.android.material.chip.ChipGroup
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:chipSpacingHorizontal="4dp">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_snooze_30min"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/snooze_30min"
-                    android:checkable="false" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_snooze_1hour"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/snooze_1hour"
-                    android:checkable="false" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_snooze_2hours"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/snooze_2hours"
-                    android:checkable="false" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_snooze_until_changed"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/snooze_until_changed"
-                    android:checkable="false" />
-            </com.google.android.material.chip.ChipGroup>
-
-            <Button
-                android:id="@+id/btn_cancel_dismiss"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:layout_gravity="end"
-                android:layout_marginTop="4dp"
-                android:text="Cancel"
-                android:textSize="15sp" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-
-    <!-- STATE 4: Docked nub (snapped to screen edge) -->
+    <!-- STATE 3: Docked nub (snapped to screen edge) -->
     <ImageView
         android:id="@+id/docked_nub"
         android:layout_width="44dp"

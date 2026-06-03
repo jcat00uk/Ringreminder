@@ -125,4 +125,56 @@ class PrefsHelper(context: Context) {
     var showAllConditions: Boolean
         get() = prefs.getBoolean("show_all_conditions", false)
         set(v) = prefs.edit().putBoolean("show_all_conditions", v).apply()
+
+    // Auto-fix (Pro): show "Auto-fix in…" row in the overlay badge
+    var autoFixOverlayEnabled: Boolean
+        get() = prefs.getBoolean("auto_fix_overlay_enabled", false)
+        set(v) = prefs.edit().putBoolean("auto_fix_overlay_enabled", v).apply()
+
+    // Auto-fix (Pro): daily recurring unmute at a set time
+    var autoFixEnabled: Boolean
+        get() = prefs.getBoolean("auto_fix_enabled", false)
+        set(v) = prefs.edit().putBoolean("auto_fix_enabled", v).apply()
+
+    var autoFixRecurringHour: Int
+        get() = prefs.getInt("auto_fix_recurring_hour", -1)
+        set(v) = prefs.edit().putInt("auto_fix_recurring_hour", v).apply()
+
+    var autoFixRecurringMinute: Int
+        get() = prefs.getInt("auto_fix_recurring_minute", 0)
+        set(v) = prefs.edit().putInt("auto_fix_recurring_minute", v).apply()
+
+    // Timestamp when a one-shot auto-fix is scheduled (0 = none scheduled)
+    var autoFixScheduledMs: Long
+        get() = prefs.getLong("auto_fix_scheduled_ms", 0L)
+        set(v) = prefs.edit().putLong("auto_fix_scheduled_ms", v).apply()
+
+    // Date string (yyyyMMdd) when recurring auto-fix last fired — prevents double-firing
+    var autoFixLastFiredDate: String
+        get() = prefs.getString("auto_fix_last_fired_date", "") ?: ""
+        set(v) = prefs.edit().putString("auto_fix_last_fired_date", v).apply()
+
+    // Per-app suppression (Pro)
+    var suppressAppsEnabled: Boolean
+        get() = prefs.getBoolean("suppress_apps_enabled", false)
+        set(v) = prefs.edit().putBoolean("suppress_apps_enabled", v).apply()
+
+    var suppressedApps: Set<String>
+        get() = prefs.getStringSet("suppressed_apps", emptySet()) ?: emptySet()
+        set(v) = prefs.edit().putStringSet("suppressed_apps", v).apply()
+
+    // Lock screen alert visibility (Pro)
+    var lockScreenAlert: Boolean
+        get() = prefs.getBoolean("lock_screen_alert", false)
+        set(v) = prefs.edit().putBoolean("lock_screen_alert", v).apply()
+
+    // Battery saver: reduce polling when battery is low (Pro)
+    var batterySaverEnabled: Boolean
+        get() = prefs.getBoolean("battery_saver_enabled", false)
+        set(v) = prefs.edit().putBoolean("battery_saver_enabled", v).apply()
+
+    // Pulse overlay icon when ring/notification arrives while muted (Pro)
+    var pulseOnMutedAlert: Boolean
+        get() = prefs.getBoolean("pulse_on_muted_alert", false)
+        set(v) = prefs.edit().putBoolean("pulse_on_muted_alert", v).apply()
 }

@@ -30,18 +30,26 @@ class ReminderWidget : AppWidgetProvider() {
 
         fun buildSmallViews(context: Context, result: EvaluationResult?): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget_small)
-            val (bgColor, _) = widgetState(result)
+            val theme = PrefsHelper(context).overlayTheme
+            val (bgColor, _) = widgetState(context, result, theme)
             views.setInt(R.id.widget_small_root, "setBackgroundColor", bgColor)
             views.setOnClickPendingIntent(R.id.widget_small_root, mainIntent(context))
+            val iconRes = if (result?.isAlertActive == true) R.drawable.ic_notification_muted
+                          else R.drawable.ic_notification
+            views.setImageViewResource(R.id.widget_small_icon, iconRes)
             return views
         }
 
         fun buildLargeViews(context: Context, result: EvaluationResult?): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget_large)
-            val (bgColor, statusText) = widgetState(result)
+            val theme = PrefsHelper(context).overlayTheme
+            val (bgColor, statusText) = widgetState(context, result, theme)
             views.setInt(R.id.widget_large_root, "setBackgroundColor", bgColor)
             views.setTextViewText(R.id.widget_large_status, statusText)
             views.setOnClickPendingIntent(R.id.widget_large_root, mainIntent(context))
+            val iconRes = if (result?.isAlertActive == true) R.drawable.ic_notification_muted
+                          else R.drawable.ic_notification
+            views.setImageViewResource(R.id.widget_large_icon, iconRes)
 
             val isRunning = RingerMonitorService.isRunning
             val alertActive = result?.isAlertActive == true
@@ -50,7 +58,7 @@ class ReminderWidget : AppWidgetProvider() {
             when {
                 isRunning && alertActive -> {
                     views.setViewVisibility(R.id.widget_large_action_btn, android.view.View.VISIBLE)
-                    views.setTextViewText(R.id.widget_large_action_btn, "Fix")
+                    views.setTextViewText(R.id.widget_large_action_btn, "Unmute")
                     views.setOnClickPendingIntent(R.id.widget_large_action_btn, fixIntent(context))
                 }
                 !isRunning && isPaused -> {
@@ -71,18 +79,35 @@ class ReminderWidget : AppWidgetProvider() {
             return views
         }
 
-        private fun widgetState(result: EvaluationResult?): Pair<Int, String> {
+        private fun widgetState(context: Context, result: EvaluationResult?, theme: String): Pair<Int, String> {
             val isRunning = RingerMonitorService.isRunning
             val isPaused = RingerMonitorService.isPaused
+            val isPro = PrefsHelper(context).isPro
+            // Only use theme colours when Pro is active
+            val helper = if (isPro) OverlayBadgeManager(context, {}, {}) else null
             return when {
-                isRunning && result?.isAlertActive == true -> when (result.primaryCondition) {
-                    AlertCondition.SILENT -> 0xFFE53935.toInt() to "Muted"
-                    AlertCondition.DND -> 0xFF8E24AA.toInt() to "DND On"
-                    AlertCondition.VIBRATE -> 0xFF546E7A.toInt() to "Vibrate"
-                    AlertCondition.LOW_VOLUME -> 0xFFEF6C00.toInt() to "Low Volume"
-                    null -> 0xFF43A047.toInt() to "Alert"
+                isRunning && result?.isAlertActive == true -> {
+                    val color = helper?.conditionColor(result.primaryCondition, theme)
+                        ?: when (result.primaryCondition) {
+                            AlertCondition.SILENT -> 0xFFE53935.toInt()
+                            AlertCondition.DND -> 0xFF8E24AA.toInt()
+                            AlertCondition.VIBRATE -> 0xFF546E7A.toInt()
+                            AlertCondition.LOW_VOLUME -> 0xFFEF6C00.toInt()
+                            null -> 0xFF43A047.toInt()
+                        }
+                    val label = when (result.primaryCondition) {
+                        AlertCondition.SILENT -> "Muted"
+                        AlertCondition.DND -> "DND On"
+                        AlertCondition.VIBRATE -> "Vibrate"
+                        AlertCondition.LOW_VOLUME -> "Low Volume"
+                        null -> "Alert"
+                    }
+                    color to label
                 }
-                isRunning -> 0xFF43A047.toInt() to "Ringer OK"
+                isRunning -> {
+                    val color = helper?.conditionColor(null, theme) ?: 0xFF43A047.toInt()
+                    color to "Ringer OK"
+                }
                 isPaused -> 0xFF757575.toInt() to "Paused"
                 else -> 0xFF757575.toInt() to "Inactive"
             }

@@ -14,8 +14,8 @@
     <string name="notif_title_dnd">Do Not Disturb is on</string>
     <string name="notif_title_vibrate">Phone is in vibrate mode</string>
     <string name="notif_title_low_volume">Ringer volume is low</string>
-    <string name="notif_body_fix">Tap to fix — you may miss calls</string>
-    <string name="action_fix_now">Fix now</string>
+    <string name="notif_body_fix">Tap to unmute — you may miss calls</string>
+    <string name="action_fix_now">Unmute now</string>
     <string name="action_pause">Pause</string>
     <string name="action_resume">Resume</string>
     <string name="notif_title_paused">Ring Reminder paused</string>
@@ -48,7 +48,7 @@
     <string name="settings">Settings</string>
     <string name="section_general">General</string>
     <string name="section_triggers">Alert triggers</string>
-    <string name="section_fix_actions">Fix actions</string>
+    <string name="section_fix_actions">Unmute actions</string>
     <string name="section_permissions">Permissions</string>
 
     <string name="master_enabled">Ring Reminder enabled</string>
@@ -59,7 +59,7 @@
     <string name="trigger_vibrate">Vibrate mode</string>
     <string name="trigger_vibrate_desc">Alert when phone is vibrate-only</string>
     <string name="trigger_dnd">Do Not Disturb</string>
-    <string name="trigger_dnd_desc">Alert when DND is blocking calls</string>
+    <string name="trigger_dnd_desc">Alert when Do Not Disturb is blocking calls</string>
     <string name="trigger_low_volume">Low ringer volume</string>
     <string name="trigger_low_volume_desc">Alert when ringer volume is below threshold</string>
     <string name="threshold_label">Alert threshold (% of max volume)</string>
@@ -67,7 +67,7 @@
     <string name="fix_unmute">Unmute / set to normal</string>
     <string name="fix_unmute_desc">Switch ringer mode back to normal</string>
     <string name="fix_dnd">Disable Do Not Disturb</string>
-    <string name="fix_dnd_desc">Turn off DND when fixing</string>
+    <string name="fix_dnd_desc">Turn off Do Not Disturb when unmuting</string>
     <string name="fix_volume">Restore ringer volume</string>
     <string name="fix_volume_desc">Set volume to the restore level below</string>
     <string name="restore_level_label">Restore to (% of max volume)</string>
@@ -87,7 +87,7 @@
     <!-- Contextual overlay / notification fix labels -->
     <string name="action_unmute">Unmute</string>
     <string name="action_enable_ringer">Enable Ringer</string>
-    <string name="action_dismiss_dnd">Dismiss DND</string>
+    <string name="action_dismiss_dnd">Dismiss Do Not Disturb</string>
     <string name="action_raise_volume">Raise Volume</string>
 
     <!-- Pro section (Settings) -->
@@ -106,8 +106,8 @@
     <string name="notification_alert_channel_desc">Heads-up alerts when your ringer is muted or blocked</string>
 
     <!-- Feature 2: Haptic feedback -->
-    <string name="haptic_on_fix">Haptic feedback on fix</string>
-    <string name="haptic_on_fix_desc">Short vibration when fix is applied</string>
+    <string name="haptic_on_fix">Haptic feedback on unmute</string>
+    <string name="haptic_on_fix_desc">Short vibration when unmuted</string>
 
     <!-- Feature 3: Timed snooze -->
     <string name="snooze_question">Snooze alert for how long?</string>
@@ -118,11 +118,75 @@
 
     <!-- Feature 4: Repeat nudge -->
     <string name="section_alert_behaviour">Alert behaviour</string>
-    <string name="nudge_enabled">Re-alert if not fixed</string>
-    <string name="nudge_enabled_desc">Show alert again after snoozing if still not fixed</string>
+    <string name="nudge_enabled">Re-alert if still muted</string>
+    <string name="nudge_enabled_desc">Show alert again after snoozing if phone is still muted</string>
     <string name="nudge_interval_label">Re-alert after</string>
 
     <!-- Feature 5: Show all conditions -->
     <string name="show_all_conditions">Show all active issues</string>
     <string name="show_all_conditions_desc">Show other active issues alongside the main alert. Note: DND suppresses volume readings, so DND and Low volume won\'t appear together.</string>
+
+    <!-- Overlay redesign: snooze + auto-fix dropdowns -->
+    <string name="snooze_alerts_for">Snooze alerts for:</string>
+    <string name="auto_fix_in">Unmute in:</string>
+    <string name="snooze_15min">15 minutes</string>
+    <string name="snooze_custom">Custom…</string>
+    <string name="snooze_until_fixed">Until unmuted</string>
+    <string name="snooze_custom_title">Snooze for how long?</string>
+    <string name="snooze_custom_hint">Minutes</string>
+    <string name="autofix_custom_title">Unmute after how long?</string>
+    <string name="autofix_scheduled">Ringer will be unmuted at %1$s</string>
+    <string name="autofix_cancel">Cancel auto-unmute</string>
+    <string name="notif_autofix_title">Auto-unmute scheduled</string>
+    <string name="overlay_unmute_in">Unmute in %1$s</string>
+    <string name="overlay_auto_fix_scheduled">Unmutes at %1$s</string>
+    <string name="overlay_daily_unmute">Auto-unmutes daily at %1$s</string>
+    <string name="overlay_cancel">Cancel</string>
+    <string name="overlay_change">Change</string>
+
+    <!-- Pro: Auto-unmute -->
+    <string name="auto_fix_overlay_enabled">Quick unmute in overlay</string>
+    <string name="auto_fix_overlay_enabled_desc">Show an \'Unmute in…\' option directly in the overlay badge</string>
+    <string name="auto_fix_enabled">Daily auto-unmute</string>
+    <string name="auto_fix_enabled_desc">Automatically unmute at a set time each day</string>
+    <string name="auto_fix_recurring_label">Daily unmute time</string>
+    <string name="auto_fix_not_set">Not set</string>
+    <!-- Widget -->
+    <string name="add_widget_small">Add small widget</string>
+    <string name="add_widget_large">Add large widget</string>
+
+    <!-- Pro: Per-app suppression -->
+    <string name="suppress_apps_enabled">Per-app suppression</string>
+    <string name="suppress_apps_enabled_desc">Pause alerts while selected apps are in the foreground</string>
+    <string name="suppress_apps_manage">Manage apps</string>
+    <string name="suppress_apps_title">Suppress alerts while using…</string>
+    <string name="perm_usage_stats">App usage access</string>
+    <string name="perm_usage_stats_reason">Ring Reminder needs to know which app is in the foreground to pause alerts while you\'re using selected apps. It does not track browsing history or personal data.</string>
+
+    <!-- Pro: Lock screen alert -->
+    <string name="lock_screen_alert">Show alert on lock screen</string>
+    <string name="lock_screen_alert_desc">Display the alert notification in full on your lock screen</string>
+
+    <!-- Pro: Battery saver -->
+    <string name="battery_saver_enabled">Battery saver mode</string>
+    <string name="battery_saver_enabled_desc">Reduce monitoring frequency when battery is low</string>
+
+    <!-- Pro: Pulse on muted alert -->
+    <string name="pulse_on_muted_alert">Pulse icon on silent ring</string>
+    <string name="pulse_on_muted_alert_desc">Pulse the overlay badge when a call arrives while the phone is muted</string>
+    <string name="perm_notification_listener">Notification access</string>
+    <string name="perm_notification_listener_reason">Ring Reminder needs to know when notifications arrive so it can pulse the icon when your phone is muted. It never reads the content of your notifications.</string>
+
+    <!-- Widget settings -->
+    <string name="section_widget">Home screen widget</string>
+    <string name="add_widget">Add widget to home screen</string>
+    <string name="add_widget_desc">Place the Ring Reminder widget on your home screen</string>
+    <string name="widget_not_supported">Your launcher doesn\'t support direct widget placement. Find it in the widgets picker.</string>
+    <string name="widget_pro_theme_note">Widget colours follow your selected theme (Pro)</string>
+
+    <!-- Onboarding: new permission steps -->
+    <string name="onboard_phone_state_title">Ring/notification pulse</string>
+    <string name="onboard_phone_state_desc">To pulse the overlay icon when a call or notification arrives while muted, Ring Reminder needs notification access. It never reads the content of your notifications.</string>
+    <string name="onboard_usage_stats_title">Per-app suppression</string>
+    <string name="onboard_usage_stats_desc">To pause alerts while using selected apps, Ring Reminder needs to know which app is in the foreground. It does not track browsing history or personal data.</string>
 </resources>

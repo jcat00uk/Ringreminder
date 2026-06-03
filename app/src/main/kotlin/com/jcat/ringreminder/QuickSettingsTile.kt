@@ -2,6 +2,7 @@ package com.jcat.ringreminder
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.graphics.drawable.Icon
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
@@ -65,17 +66,19 @@ class QuickSettingsTile : TileService() {
                 tile.state = Tile.STATE_ACTIVE
                 tile.label = when (result.primaryCondition) {
                     AlertCondition.SILENT -> "Muted"
-                    AlertCondition.DND -> "DND On"
+                    AlertCondition.DND -> "Do Not Disturb"
                     AlertCondition.VIBRATE -> "Vibrate"
                     AlertCondition.LOW_VOLUME -> "Low Volume"
                     null -> "Alert"
                 }
-                tile.contentDescription = "Tap to fix"
+                tile.contentDescription = "Tap to unmute"
+                tile.icon = Icon.createWithResource(this, R.drawable.ic_notification_muted)
             }
             else -> {
                 tile.state = Tile.STATE_ACTIVE
                 tile.label = "Ring Reminder"
                 tile.contentDescription = "Ringer OK"
+                tile.icon = Icon.createWithResource(this, R.drawable.ic_tile)
             }
         }
         tile.updateTile()

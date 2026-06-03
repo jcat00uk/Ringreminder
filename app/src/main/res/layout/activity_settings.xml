@@ -19,6 +19,7 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/nested_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -49,34 +50,65 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:orientation="vertical">
 
+                    <!-- Master toggle -->
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="@string/master_enabled"
-                            android:textSize="16sp" />
-
-                        <TextView
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="@string/master_enabled" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="@string/master_enabled_desc" android:textSize="13sp"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/switch_master"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/master_enabled_desc"
-                            android:textSize="13sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/switch_master"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Add widget (free) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="@string/add_widget" android:textSize="16sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="@string/add_widget_desc" android:textSize="13sp"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="4dp">
+                            <Button
+                                android:id="@+id/btn_add_widget_small"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/add_widget_small" />
+                            <Button
+                                android:id="@+id/btn_add_widget_large"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/add_widget_large" />
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -103,189 +135,82 @@
                     android:orientation="vertical">
 
                     <!-- Silent -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/trigger_silent" android:textSize="16sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/trigger_silent_desc" android:textSize="13sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/trigger_silent" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/trigger_silent_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
-                        <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switch_trigger_silent"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_trigger_silent" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
 
                     <!-- Vibrate -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/trigger_vibrate" android:textSize="16sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/trigger_vibrate_desc" android:textSize="13sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/trigger_vibrate" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/trigger_vibrate_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
-                        <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switch_trigger_vibrate"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_trigger_vibrate" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
 
                     <!-- DND -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/trigger_dnd" android:textSize="16sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/trigger_dnd_desc" android:textSize="13sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/trigger_dnd" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/trigger_dnd_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
-                        <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switch_trigger_dnd"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_trigger_dnd" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
 
-                    <!-- Low Volume + threshold pills -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                    android:text="@string/trigger_low_volume" android:textSize="16sp" />
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                    android:text="@string/trigger_low_volume_desc" android:textSize="13sp"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    <!-- Low Volume + threshold chips -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/trigger_low_volume" android:textSize="16sp" />
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/trigger_low_volume_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                             </LinearLayout>
-                            <com.google.android.material.switchmaterial.SwitchMaterial
-                                android:id="@+id/switch_trigger_low_volume"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" />
+                            <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_trigger_low_volume" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                         </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="@string/threshold_label"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
-
-                        <com.google.android.material.chip.ChipGroup
-                            android:id="@+id/chip_group_threshold"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            app:singleSelection="true"
-                            app:selectionRequired="true" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/threshold_label" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_threshold" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" app:singleSelection="true" app:selectionRequired="true" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
 
-                    <!-- Show all active conditions (Feature 5) -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/show_all_conditions" android:textSize="16sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/show_all_conditions_desc" android:textSize="13sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <!-- Show all conditions -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/show_all_conditions" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/show_all_conditions_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
-                        <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switch_show_all_conditions"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_show_all_conditions" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
 
-                    <!-- Haptic feedback on fix (Feature 2) -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/haptic_on_fix" android:textSize="16sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/haptic_on_fix_desc" android:textSize="13sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <!-- Haptic feedback -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/haptic_on_fix" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/haptic_on_fix_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
-                        <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switch_haptic_on_fix"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_haptic_on_fix" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ── Alert Behaviour (Feature 4) ── -->
+            <!-- ── Alert Behaviour ── -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -302,55 +227,22 @@
                 android:layout_marginBottom="20dp"
                 app:cardCornerRadius="12dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="16dp">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/nudge_enabled" android:textSize="16sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/nudge_enabled_desc" android:textSize="13sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/nudge_enabled" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/nudge_enabled_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
-                        <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switch_nudge_enabled"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_nudge_enabled" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <LinearLayout
-                        android:id="@+id/layout_nudge_interval"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginTop="10dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/nudge_interval_label"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
-
-                        <com.google.android.material.chip.ChipGroup
-                            android:id="@+id/chip_group_nudge_interval"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            app:singleSelection="true"
-                            app:selectionRequired="true" />
+                    <LinearLayout android:id="@+id/layout_nudge_interval" android:layout_width="match_parent"
+                        android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginTop="10dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/nudge_interval_label" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_nudge_interval" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" app:singleSelection="true" app:selectionRequired="true" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -372,109 +264,39 @@
                 android:layout_marginBottom="20dp"
                 app:cardCornerRadius="12dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
 
-                    <!-- Unmute -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/fix_unmute" android:textSize="16sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/fix_unmute_desc" android:textSize="13sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix_unmute" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix_unmute_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
-                        <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switch_fix_unmute"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_fix_unmute" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
 
-                    <!-- Disable DND -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/fix_dnd" android:textSize="16sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/fix_dnd_desc" android:textSize="13sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix_dnd" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix_dnd_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
-                        <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switch_fix_dnd"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_fix_dnd" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
 
-                    <!-- Restore Volume + level pills -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                    android:text="@string/fix_volume" android:textSize="16sp" />
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                    android:text="@string/fix_volume_desc" android:textSize="13sp"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    <!-- Restore volume + level chips -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix_volume" android:textSize="16sp" />
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix_volume_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                             </LinearLayout>
-                            <com.google.android.material.switchmaterial.SwitchMaterial
-                                android:id="@+id/switch_fix_volume"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" />
+                            <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_fix_volume" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                         </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="@string/restore_level_label"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
-
-                        <com.google.android.material.chip.ChipGroup
-                            android:id="@+id/chip_group_restore"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            app:singleSelection="true"
-                            app:selectionRequired="true" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/restore_level_label" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_restore" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" app:singleSelection="true" app:selectionRequired="true" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -493,108 +315,62 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="20dp"
                 app:cardCornerRadius="12dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
 
                     <!-- Overlay -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/perm_overlay" android:textSize="15sp" />
-                            <TextView
-                                android:id="@+id/status_overlay"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="13sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_overlay" android:textSize="15sp" />
+                            <TextView android:id="@+id/status_overlay" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
-                        <Button
-                            android:id="@+id/btn_fix_overlay"
-                            style="@style/Widget.Material3.Button.TextButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/fix"
-                            android:visibility="gone" />
+                        <Button android:id="@+id/btn_fix_overlay" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
 
                     <!-- DND access -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/perm_dnd" android:textSize="15sp" />
-                            <TextView
-                                android:id="@+id/status_dnd"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="13sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_dnd" android:textSize="15sp" />
+                            <TextView android:id="@+id/status_dnd" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
-                        <Button
-                            android:id="@+id/btn_fix_dnd_perm"
-                            style="@style/Widget.Material3.Button.TextButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/fix"
-                            android:visibility="gone" />
+                        <Button android:id="@+id/btn_fix_dnd_perm" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
 
                     <!-- Battery optimisation -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="@string/perm_battery" android:textSize="15sp" />
-                            <TextView
-                                android:id="@+id/status_battery"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="13sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_battery" android:textSize="15sp" />
+                            <TextView android:id="@+id/status_battery" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
-                        <Button
-                            android:id="@+id/btn_fix_battery"
-                            style="@style/Widget.Material3.Button.TextButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/fix"
-                            android:visibility="gone" />
+                        <Button android:id="@+id/btn_fix_battery" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Notification listener (for pulse feature) -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_notification_listener" android:textSize="15sp" />
+                            <TextView android:id="@+id/status_notification_listener" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                        <Button android:id="@+id/btn_fix_notification_listener" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Usage stats (for per-app suppression) -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_usage_stats" android:textSize="15sp" />
+                            <TextView android:id="@+id/status_usage_stats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                        <Button android:id="@+id/btn_fix_usage_stats" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -617,121 +393,109 @@
                 android:layout_marginBottom="20dp"
                 app:cardCornerRadius="12dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
 
                     <!-- Scheduling -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/schedule_enabled"
-                                    android:textSize="16sp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/schedule_enabled_desc"
-                                    android:textSize="13sp"
-                                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/schedule_enabled" android:textSize="16sp" />
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/schedule_enabled_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                             </LinearLayout>
-
-                            <com.google.android.material.switchmaterial.SwitchMaterial
-                                android:id="@+id/switch_schedule_enabled"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content" />
+                            <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_schedule_enabled" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                         </LinearLayout>
-
-                        <LinearLayout
-                            android:id="@+id/layout_schedule_times"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginTop="4dp"
-                            android:gravity="center_vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/schedule_from"
-                                android:textSize="14sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
-
-                            <Button
-                                android:id="@+id/btn_schedule_from"
-                                style="@style/Widget.Material3.Button.TextButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="08:00"
-                                android:textSize="14sp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="4dp"
-                                android:text="@string/schedule_to"
-                                android:textSize="14sp"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
-
-                            <Button
-                                android:id="@+id/btn_schedule_to"
-                                style="@style/Widget.Material3.Button.TextButton"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="22:00"
-                                android:textSize="14sp" />
+                        <LinearLayout android:id="@+id/layout_schedule_times" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="4dp" android:gravity="center_vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/schedule_from" android:textSize="14sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            <Button android:id="@+id/btn_schedule_from" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="08:00" android:textSize="14sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="4dp" android:text="@string/schedule_to" android:textSize="14sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            <Button android:id="@+id/btn_schedule_to" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="22:00" android:textSize="14sp" />
                         </LinearLayout>
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
 
-                    <!-- Overlay theme -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
+                    <!-- Auto-unmute: overlay quick-fix toggle (Pro) -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/auto_fix_overlay_enabled" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/auto_fix_overlay_enabled_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_auto_fix_overlay_enabled" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/overlay_theme"
-                            android:textSize="16sp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/overlay_theme_desc"
-                            android:textSize="13sp"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    <!-- Auto-unmute: daily recurring toggle + time picker (Pro) -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/auto_fix_enabled" android:textSize="16sp" />
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/auto_fix_enabled_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+                            <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_auto_fix_enabled" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        </LinearLayout>
+                        <LinearLayout android:id="@+id/layout_auto_fix_time" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="6dp" android:gravity="center_vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/auto_fix_recurring_label" android:textSize="14sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            <Button android:id="@+id/btn_auto_fix_time" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/auto_fix_not_set" android:textSize="14sp" />
+                        </LinearLayout>
+                    </LinearLayout>
 
-                        <com.google.android.material.chip.ChipGroup
-                            android:id="@+id/chip_group_theme"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            app:singleSelection="true"
-                            app:selectionRequired="true" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Per-app suppression (Pro) -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/suppress_apps_enabled" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/suppress_apps_enabled_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_suppress_apps" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+                    <LinearLayout android:id="@+id/layout_suppress_apps_manage" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingBottom="12dp" android:gravity="center_vertical" android:visibility="gone">
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/suppress_apps_title" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        <Button android:id="@+id/btn_manage_suppress_apps" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/suppress_apps_manage" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Lock screen alert (Pro) -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lock_screen_alert" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/lock_screen_alert_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_lock_screen_alert" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Battery saver (Pro) -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/battery_saver_enabled" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/battery_saver_enabled_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_battery_saver" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Pulse on muted alert (Pro) -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pulse_on_muted_alert" android:textSize="16sp" />
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/pulse_on_muted_alert_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_pulse_on_muted_alert" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Overlay theme + widget note -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/overlay_theme" android:textSize="16sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/overlay_theme_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_theme" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" app:singleSelection="true" app:selectionRequired="true" />
+                        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/widget_pro_theme_note" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:fontFamily="sans-serif-italic" />
                     </LinearLayout>
 
                     <View
@@ -741,7 +505,7 @@
                         android:layout_marginStart="16dp"
                         android:background="?attr/colorOutlineVariant" />
 
-                    <!-- Pro lock / upgrade row -->
+                    <!-- Pro upgrade row -->
                     <LinearLayout
                         android:id="@+id/layout_pro_upgrade"
                         android:layout_width="match_parent"
@@ -749,7 +513,6 @@
                         android:orientation="horizontal"
                         android:padding="16dp"
                         android:gravity="center_vertical">
-
                         <TextView
                             android:id="@+id/txt_pro_locked"
                             android:layout_width="0dp"
@@ -758,7 +521,6 @@
                             android:text="@string/pro_locked_hint"
                             android:textSize="13sp"
                             android:textColor="@color/warning_text" />
-
                         <Button
                             android:id="@+id/btn_upgrade_pro"
                             style="@style/Widget.Material3.Button"
