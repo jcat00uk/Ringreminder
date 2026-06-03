@@ -62,4 +62,35 @@ class PrefsHelper(context: Context) {
     var onboardingComplete: Boolean
         get() = prefs.getBoolean("onboarding_complete", false)
         set(v) = prefs.edit().putBoolean("onboarding_complete", v).apply()
+
+    // Pro status — default true for dev/testing; flip to false before Play Store release
+    var isPro: Boolean
+        get() = prefs.getBoolean("is_pro", true)
+        set(v) = prefs.edit().putBoolean("is_pro", v).apply()
+
+    // Scheduling
+    var scheduleEnabled: Boolean
+        get() = prefs.getBoolean("schedule_enabled", false)
+        set(v) = prefs.edit().putBoolean("schedule_enabled", v).apply()
+
+    var scheduleStartHour: Int
+        get() = prefs.getInt("schedule_start_hour", 8)
+        set(v) = prefs.edit().putInt("schedule_start_hour", v).apply()
+
+    var scheduleStartMinute: Int
+        get() = prefs.getInt("schedule_start_minute", 0)
+        set(v) = prefs.edit().putInt("schedule_start_minute", v).apply()
+
+    var scheduleEndHour: Int
+        get() = prefs.getInt("schedule_end_hour", 22)
+        set(v) = prefs.edit().putInt("schedule_end_hour", v).apply()
+
+    var scheduleEndMinute: Int
+        get() = prefs.getInt("schedule_end_minute", 0)
+        set(v) = prefs.edit().putInt("schedule_end_minute", v).apply()
+
+    // Overlay theme: "default" | "dark" | "mono" | "vibrant"
+    var overlayTheme: String
+        get() = prefs.getString("overlay_theme", "default") ?: "default"
+        set(v) = prefs.edit().putString("overlay_theme", v).apply()
 }

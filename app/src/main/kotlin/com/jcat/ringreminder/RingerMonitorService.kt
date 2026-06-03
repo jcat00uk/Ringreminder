@@ -17,6 +17,7 @@ class RingerMonitorService : Service() {
 
     companion object {
         @Volatile var isRunning = false
+        const val ACTION_REFRESH = "com.jcat.ringreminder.ACTION_REFRESH"
     }
 
     private lateinit var prefs: PrefsHelper
@@ -75,6 +76,7 @@ class RingerMonitorService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             NotificationHelper.ACTION_FIX_NOW -> applyFixes()
+            ACTION_REFRESH -> evaluateAndUpdate()
             NotificationHelper.ACTION_PAUSE -> {
                 notificationManager.notify(
                     NotificationHelper.PAUSED_NOTIFICATION_ID,
@@ -128,19 +130,37 @@ class RingerMonitorService : Service() {
 
     fun evaluateAndUpdate() {
         val state = getCurrentRingerState()
-        val result = evaluator.evaluate(
-            state,
-            prefs.triggerSilent,
-            prefs.triggerVibrate,
-            prefs.triggerDnd,
-            prefs.triggerLowVolume,
-            prefs.thresholdVolumePercent
-        )
+        val result = if (isWithinSchedule()) {
+            evaluator.evaluate(
+                state,
+                prefs.triggerSilent,
+                prefs.triggerVibrate,
+                prefs.triggerDnd,
+                prefs.triggerLowVolume,
+                prefs.thresholdVolumePercent
+            )
+        } else {
+            EvaluationResult(emptyList(), null)
+        }
         notificationHelper.updateNotification(result)
         if (result.isAlertActive) {
             overlayBadgeManager.show(result)
         } else {
             overlayBadgeManager.hide()
+        }
+    }
+
+    private fun isWithinSchedule(): Boolean {
+        if (!prefs.isPro || !prefs.scheduleEnabled) return true
+        val cal = java.util.Calendar.getInstance()
+        val nowMinutes = cal.get(java.util.Calendar.HOUR_OF_DAY) * 60 + cal.get(java.util.Calendar.MINUTE)
+        val startMinutes = prefs.scheduleStartHour * 60 + prefs.scheduleStartMinute
+        val endMinutes = prefs.scheduleEndHour * 60 + prefs.scheduleEndMinute
+        return if (startMinutes <= endMinutes) {
+            nowMinutes in startMinutes..endMinutes
+        } else {
+            // Overnight schedule e.g. 22:00–08:00
+            nowMinutes >= startMinutes || nowMinutes <= endMinutes
         }
     }
 

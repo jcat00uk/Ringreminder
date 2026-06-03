@@ -74,11 +74,19 @@ class NotificationHelper(private val context: Context) {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
+            val fixLabel = when (result.primaryCondition) {
+                AlertCondition.SILENT -> context.getString(R.string.action_unmute)
+                AlertCondition.DND -> context.getString(R.string.action_dismiss_dnd)
+                AlertCondition.VIBRATE -> context.getString(R.string.action_enable_ringer)
+                AlertCondition.LOW_VOLUME -> context.getString(R.string.action_raise_volume)
+                null -> context.getString(R.string.action_fix_now)
+            }
+
             builder
                 .setContentTitle(title)
                 .setContentText(context.getString(R.string.notif_body_fix))
                 .setColor(color)
-                .addAction(R.drawable.ic_fix, context.getString(R.string.action_fix_now), fixPendingIntent)
+                .addAction(R.drawable.ic_fix, fixLabel, fixPendingIntent)
         } else {
             builder
                 .setContentTitle(context.getString(R.string.notif_title_active))

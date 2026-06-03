@@ -78,4 +78,26 @@
     <string name="granted">Granted ✓</string>
     <string name="not_granted">Not granted</string>
     <string name="fix">Fix</string>
+
+    <!-- Permission warning banner (MainActivity) -->
+    <string name="perm_warning_title">Permissions need attention</string>
+    <string name="perm_warning_body">Missing: %1$s</string>
+    <string name="review_permissions">Review Permissions</string>
+
+    <!-- Contextual overlay / notification fix labels -->
+    <string name="action_unmute">Unmute</string>
+    <string name="action_enable_ringer">Enable Ringer</string>
+    <string name="action_dismiss_dnd">Dismiss DND</string>
+    <string name="action_raise_volume">Raise Volume</string>
+
+    <!-- Pro section (Settings) -->
+    <string name="section_pro">Ring Reminder Pro</string>
+    <string name="pro_locked_hint">Pro feature · Upgrade to unlock</string>
+    <string name="unlock_pro">Upgrade to Pro</string>
+    <string name="schedule_enabled">Alert schedule</string>
+    <string name="schedule_enabled_desc">Only show alerts during set hours</string>
+    <string name="schedule_from">From</string>
+    <string name="schedule_to">To</string>
+    <string name="overlay_theme">Overlay theme</string>
+    <string name="overlay_theme_desc">Appearance of the floating badge</string>
 </resources>

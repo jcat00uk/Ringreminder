@@ -1,10 +1,13 @@
 package com.jcat.ringreminder
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.app.NotificationManager
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.jcat.ringreminder.databinding.ActivityMainBinding
@@ -31,6 +34,9 @@ class MainActivity : AppCompatActivity() {
         binding.btnOpenSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
+        binding.btnReviewPermissions.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
         binding.btnRerunSetup.setOnClickListener {
             prefs.onboardingComplete = false
             startActivity(Intent(this, OnboardingActivity::class.java))
@@ -46,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         if (!prefs.onboardingComplete) return
         updateUI()
+        checkPermissions()
     }
 
     private fun updateUI() {
@@ -82,6 +89,26 @@ class MainActivity : AppCompatActivity() {
         } else {
             binding.statusText.text = getString(R.string.status_ringer_ok)
             binding.statusCard.setCardBackgroundColor(getColor(R.color.status_ok))
+        }
+    }
+
+    private fun checkPermissions() {
+        val issues = mutableListOf<String>()
+        if (!Settings.canDrawOverlays(this)) issues.add("Draw over apps")
+        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        if (!nm.isNotificationPolicyAccessGranted) issues.add("DND access")
+        val pm = getSystemService(POWER_SERVICE) as PowerManager
+        if (!pm.isIgnoringBatteryOptimizations(packageName)) issues.add("Battery exempt")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                issues.add("Notifications")
+            }
+        }
+        if (issues.isEmpty()) {
+            binding.permissionWarningBanner.visibility = View.GONE
+        } else {
+            binding.permissionWarningBanner.visibility = View.VISIBLE
+            binding.permissionWarningText.text = getString(R.string.perm_warning_body, issues.joinToString(", "))
         }
     }
 

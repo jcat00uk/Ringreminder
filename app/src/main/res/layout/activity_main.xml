@@ -29,6 +29,50 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Permission warning banner -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/permission_warning_banner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/warning_bg"
+                app:cardCornerRadius="8dp"
+                app:strokeColor="@color/warning_text"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/perm_warning_title"
+                        android:textColor="@color/warning_text"
+                        android:textStyle="bold"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/permission_warning_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/warning_text"
+                        android:textSize="13sp" />
+
+                    <Button
+                        android:id="@+id/btn_review_permissions"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/review_permissions" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Service not running warning -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/service_warning_banner"

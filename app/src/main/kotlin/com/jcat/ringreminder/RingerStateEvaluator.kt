@@ -40,7 +40,10 @@ class RingerStateEvaluator {
     ): EvaluationResult {
         val conditions = mutableListOf<AlertCondition>()
 
-        if (triggerSilent && state.ringerMode == RINGER_MODE_SILENT) {
+        // Only report SILENT when DND is not active — DND causes ringerMode=SILENT as a side
+        // effect on most devices, so if DND is on the silence is DND-induced, not a manual mute.
+        if (triggerSilent && state.ringerMode == RINGER_MODE_SILENT
+                && state.interruptionFilter == INTERRUPTION_FILTER_ALL) {
             conditions.add(AlertCondition.SILENT)
         }
         if (triggerDnd && state.interruptionFilter != INTERRUPTION_FILTER_ALL) {
