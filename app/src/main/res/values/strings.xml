@@ -72,6 +72,8 @@
     <string name="fix_volume_desc">Set volume to the restore level below</string>
     <string name="restore_level_label">Restore to (% of max volume)</string>
 
+    <string name="perm_post_notifications">Show notifications</string>
+    <string name="perm_post_notifications_desc">Required to display alerts and the persistent monitoring notification.</string>
     <string name="perm_overlay">Draw over other apps</string>
     <string name="perm_dnd">Do Not Disturb access</string>
     <string name="perm_battery">Battery optimisation exempt</string>
@@ -94,12 +96,21 @@
     <string name="section_pro">Ring Reminder Pro</string>
     <string name="pro_locked_hint">Pro feature · Upgrade to unlock</string>
     <string name="unlock_pro">Upgrade to Pro</string>
+    <string name="restore_pro">Restore</string>
+    <string name="restore_pro_success">Purchase restored — Pro unlocked!</string>
+    <string name="restore_pro_not_found">No purchase found on this account.</string>
+    <string name="trial_expired">Your 7-day free trial has ended · Upgrade to keep Pro features</string>
     <string name="schedule_enabled">Alert schedule</string>
     <string name="schedule_enabled_desc">Only show alerts during set hours</string>
     <string name="schedule_from">From</string>
     <string name="schedule_to">To</string>
     <string name="overlay_theme">Overlay theme</string>
-    <string name="overlay_theme_desc">Appearance of the floating badge</string>
+    <string name="overlay_theme_desc">Badge and header colour, shown for Do Not Disturb</string>
+    <string name="overlay_panel_mode">Panel background</string>
+    <string name="overlay_panel_mode_desc">Background of the expanded overlay card</string>
+    <string name="panel_mode_light">Light</string>
+    <string name="panel_mode_dark">Dark</string>
+    <string name="panel_mode_system">System</string>
 
     <!-- Feature 1: Split notification channels -->
     <string name="notification_alert_channel_name">Ring Reminder Alerts</string>

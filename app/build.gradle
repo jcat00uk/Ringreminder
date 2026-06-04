@@ -11,7 +11,7 @@ if (keystoreScript.exists()) {
 
 android {
     namespace 'com.jcat.ringreminder'
-    compileSdk 34
+    compileSdk 35
 
     signingConfigs {
         release {
@@ -25,7 +25,7 @@ android {
     defaultConfig {
         applicationId "com.jcat.ringreminder"
         minSdk 26
-        targetSdk 34
+        targetSdk 35
         versionCode (project.findProperty('appVersionCode') as Integer) ?: 1
         versionName (project.findProperty('appVersionName') ?: '1.0-dev') as String
     }
@@ -53,8 +53,13 @@ android {
         jvmTarget = '1.8'
     }
 
+    lint {
+        checkReleaseBuilds false
+    }
+
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 
@@ -63,4 +68,5 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.android.billingclient:billing-ktx:7.0.0'
 }

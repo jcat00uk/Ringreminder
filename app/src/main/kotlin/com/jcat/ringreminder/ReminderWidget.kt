@@ -33,7 +33,8 @@ class ReminderWidget : AppWidgetProvider() {
             val theme = PrefsHelper(context).overlayTheme
             val (bgColor, _) = widgetState(context, result, theme)
             views.setInt(R.id.widget_small_root, "setBackgroundColor", bgColor)
-            views.setOnClickPendingIntent(R.id.widget_small_root, mainIntent(context))
+            val tapIntent = if (result?.isAlertActive == true) expandOverlayIntent(context) else mainIntent(context)
+            views.setOnClickPendingIntent(R.id.widget_small_root, tapIntent)
             val iconRes = if (result?.isAlertActive == true) R.drawable.ic_notification_muted
                           else R.drawable.ic_notification
             views.setImageViewResource(R.id.widget_small_icon, iconRes)
@@ -46,7 +47,8 @@ class ReminderWidget : AppWidgetProvider() {
             val (bgColor, statusText) = widgetState(context, result, theme)
             views.setInt(R.id.widget_large_root, "setBackgroundColor", bgColor)
             views.setTextViewText(R.id.widget_large_status, statusText)
-            views.setOnClickPendingIntent(R.id.widget_large_root, mainIntent(context))
+            val tapIntent = if (result?.isAlertActive == true) expandOverlayIntent(context) else mainIntent(context)
+            views.setOnClickPendingIntent(R.id.widget_large_root, tapIntent)
             val iconRes = if (result?.isAlertActive == true) R.drawable.ic_notification_muted
                           else R.drawable.ic_notification
             views.setImageViewResource(R.id.widget_large_icon, iconRes)
@@ -117,6 +119,15 @@ class ReminderWidget : AppWidgetProvider() {
             PendingIntent.getActivity(
                 context, 0,
                 Intent(context, MainActivity::class.java).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+        private fun expandOverlayIntent(context: Context): PendingIntent =
+            PendingIntent.getService(
+                context, 3,
+                Intent(context, RingerMonitorService::class.java).apply {
+                    action = RingerMonitorService.ACTION_EXPAND_OVERLAY
+                },
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 

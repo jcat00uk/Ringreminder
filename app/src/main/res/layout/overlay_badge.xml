@@ -142,6 +142,7 @@
                     android:focusable="true">
 
                     <TextView
+                        android:id="@+id/txt_snooze_label"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -240,6 +241,7 @@
                     android:visibility="gone">
 
                     <TextView
+                        android:id="@+id/txt_auto_fix_label"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"

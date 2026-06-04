@@ -5,6 +5,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.provider.Settings
@@ -18,6 +20,7 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import com.google.android.material.chip.Chip
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -197,6 +200,7 @@ class OverlayBadgeManager(
             if (result.hasMultipleIssues) View.VISIBLE else View.GONE
 
         view.findViewById<View>(R.id.card_header).setBackgroundColor(bgColor)
+        applyCardTheme(view)
         view.findViewById<TextView>(R.id.expanded_title).text = expTitle
         view.findViewById<TextView>(R.id.expanded_description).text = expDesc
 
@@ -263,6 +267,32 @@ class OverlayBadgeManager(
         } else {
             chipGroup.visibility = View.GONE
         }
+    }
+
+    fun expandCard() {
+        val view = rootView ?: return
+        if (state != State.EXPANDED) transitionTo(view, State.EXPANDED)
+    }
+
+    private fun isCardDark(): Boolean = when (prefs.overlayPanelMode) {
+        "dark"  -> true
+        "light" -> false
+        else    -> (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+                    Configuration.UI_MODE_NIGHT_YES
+    }
+
+    private fun applyCardTheme(view: View) {
+        val dark = isCardDark()
+        val cardBg      = if (dark) 0xFF1C1C1C.toInt() else Color.WHITE
+        val bodyText    = if (dark) 0xFFCCCCCC.toInt() else 0xFF555555.toInt()
+        val secondaryText = if (dark) 0xFF999999.toInt() else 0xFF777777.toInt()
+
+        view.findViewById<CardView>(R.id.expanded_card).setCardBackgroundColor(cardBg)
+        view.findViewById<TextView>(R.id.expanded_description).setTextColor(bodyText)
+        view.findViewById<TextView>(R.id.txt_snooze_label).setTextColor(bodyText)
+        view.findViewById<TextView>(R.id.txt_auto_fix_label).setTextColor(bodyText)
+        view.findViewById<TextView>(R.id.txt_auto_fix_scheduled).setTextColor(secondaryText)
+        view.findViewById<TextView>(R.id.txt_daily_unmute).setTextColor(secondaryText)
     }
 
     fun conditionColor(condition: AlertCondition?, theme: String): Int = when (theme) {
@@ -563,6 +593,12 @@ class OverlayBadgeManager(
     }
 
     private fun transitionTo(view: View, newState: State) {
+        if (newState == State.COLLAPSED && prefs.badgeDocked) {
+            layoutParams.y = prefs.badgeDockedY.toInt()
+            try { windowManager.updateViewLayout(view, layoutParams) } catch (_: Exception) {}
+            snapToEdge(view, prefs.badgeDockedRight)
+            return
+        }
         state = newState
         view.alpha = if (newState == State.DOCKED) 0.55f else 1.0f
         view.findViewById<View>(R.id.collapsed_badge).visibility =

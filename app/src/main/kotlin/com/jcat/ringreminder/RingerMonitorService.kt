@@ -35,6 +35,7 @@ class RingerMonitorService : Service() {
 
         const val ACTION_REFRESH = "com.jcat.ringreminder.ACTION_REFRESH"
         const val ACTION_AUTO_FIX = "com.jcat.ringreminder.ACTION_AUTO_FIX"
+        const val ACTION_EXPAND_OVERLAY = "com.jcat.ringreminder.ACTION_EXPAND_OVERLAY"
         const val ACTION_PULSE_START = "com.jcat.ringreminder.ACTION_PULSE_START"
         const val ACTION_PULSE_STOP = "com.jcat.ringreminder.ACTION_PULSE_STOP"
 
@@ -128,6 +129,7 @@ class RingerMonitorService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             NotificationHelper.ACTION_FIX_NOW -> applyFixes()
+            ACTION_EXPAND_OVERLAY -> overlayBadgeManager.expandCard()
             ACTION_REFRESH -> evaluateAndUpdate()
             ACTION_AUTO_FIX -> {
                 applyFixes()
@@ -371,6 +373,7 @@ class RingerMonitorService : Service() {
             NotificationHelper.AUTOFIX_NOTIFICATION_ID,
             notificationHelper.buildAutoFixScheduledNotification(triggerMs)
         )
+        evaluateAndUpdate()
     }
 
     private fun cancelAutoFix() {
@@ -383,6 +386,7 @@ class RingerMonitorService : Service() {
         )
         (getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(pendingIntent)
         notificationHelper.cancelAutoFixNotification()
+        evaluateAndUpdate()
     }
 
     private fun isSnoozed(result: EvaluationResult): Boolean {

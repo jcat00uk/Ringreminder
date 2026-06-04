@@ -16,6 +16,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var prefs: PrefsHelper
+    private var billingManager: BillingManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +27,8 @@ class MainActivity : AppCompatActivity() {
             finish()
             return
         }
+
+        billingManager = BillingManager(this).also { it.start {} }
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -51,8 +54,14 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (!prefs.onboardingComplete) return
+        billingManager?.refresh()
         updateUI()
         checkPermissions()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        billingManager?.destroy()
     }
 
     private fun updateUI() {

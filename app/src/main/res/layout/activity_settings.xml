@@ -320,6 +320,18 @@
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
 
+                    <!-- Post notifications (Android 13+) -->
+                    <LinearLayout android:id="@+id/layout_post_notifications_perm" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_post_notifications" android:textSize="15sp" />
+                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/perm_post_notifications_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
+                            <TextView android:id="@+id/status_post_notifications" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        </LinearLayout>
+                        <Button android:id="@+id/btn_fix_post_notifications" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
+                    </LinearLayout>
+
+                    <View android:id="@+id/divider_post_notifications" android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
                     <!-- Overlay -->
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
@@ -382,6 +394,7 @@
 
             <!-- ── Ring Reminder Pro ── -->
             <TextView
+                android:id="@+id/txt_section_pro"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
@@ -503,6 +516,15 @@
                         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/widget_pro_theme_note" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:fontFamily="sans-serif-italic" />
                     </LinearLayout>
 
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                    <!-- Panel background mode -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/overlay_panel_mode" android:textSize="16sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/overlay_panel_mode_desc" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                        <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_panel_mode" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" app:singleSelection="true" app:selectionRequired="true" />
+                    </LinearLayout>
+
                     <View
                         android:id="@+id/divider_pro_upgrade"
                         android:layout_width="match_parent"
@@ -526,6 +548,13 @@
                             android:text="@string/pro_locked_hint"
                             android:textSize="13sp"
                             android:textColor="@color/warning_text" />
+                        <Button
+                            android:id="@+id/btn_restore_pro"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/restore_pro"
+                            android:textSize="13sp" />
                         <Button
                             android:id="@+id/btn_upgrade_pro"
                             style="@style/Widget.Material3.Button"

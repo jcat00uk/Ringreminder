@@ -9,6 +9,7 @@ class PrefsHelper(context: Context) {
 
     companion object {
         const val PREFS_NAME = "ring_reminder_prefs"
+        const val TRIAL_DURATION_MS = 7L * 24 * 60 * 60 * 1000L
     }
 
     var triggerSilent: Boolean
@@ -75,10 +76,34 @@ class PrefsHelper(context: Context) {
         get() = prefs.getBoolean("onboarding_complete", false)
         set(v) = prefs.edit().putBoolean("onboarding_complete", v).apply()
 
-    // Pro status — default true for dev/testing; flip to false before Play Store release
-    var isPro: Boolean
-        get() = prefs.getBoolean("is_pro", true)
+    var hasPurchasedPro: Boolean
+        get() = prefs.getBoolean("is_pro", false)
         set(v) = prefs.edit().putBoolean("is_pro", v).apply()
+
+    var trialStartMs: Long
+        get() {
+            val stored = prefs.getLong("trial_start_ms", -1L)
+            if (stored == -1L) {
+                val now = System.currentTimeMillis()
+                prefs.edit().putLong("trial_start_ms", now).apply()
+                return now
+            }
+            return stored
+        }
+        set(v) = prefs.edit().putLong("trial_start_ms", v).apply()
+
+    val isInTrial: Boolean
+        get() = !hasPurchasedPro && System.currentTimeMillis() - trialStartMs < TRIAL_DURATION_MS
+
+    val trialDaysRemaining: Int
+        get() {
+            val remaining = TRIAL_DURATION_MS - (System.currentTimeMillis() - trialStartMs)
+            return ((remaining + 86_399_999L) / 86_400_000L).toInt().coerceAtLeast(0)
+        }
+
+    var isPro: Boolean
+        get() = BuildConfig.DEBUG || hasPurchasedPro || isInTrial
+        set(v) { hasPurchasedPro = v }
 
     // Scheduling
     var scheduleEnabled: Boolean
@@ -105,6 +130,11 @@ class PrefsHelper(context: Context) {
     var overlayTheme: String
         get() = prefs.getString("overlay_theme", "default") ?: "default"
         set(v) = prefs.edit().putString("overlay_theme", v).apply()
+
+    // Overlay panel background: "light" | "dark" | "system"
+    var overlayPanelMode: String
+        get() = prefs.getString("overlay_panel_mode", "system") ?: "system"
+        set(v) = prefs.edit().putString("overlay_panel_mode", v).apply()
 
     // Feature 2: Haptic feedback
     var hapticOnFix: Boolean

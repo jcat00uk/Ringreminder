@@ -20,6 +20,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.chip.Chip
 import com.jcat.ringreminder.databinding.ActivitySettingsBinding
+import android.Manifest
+import android.content.pm.PackageManager
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -30,6 +32,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var prefs: PrefsHelper
+    private var billingManager: BillingManager? = null
 
     private val settingsLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -43,12 +46,16 @@ class SettingsActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         prefs = PrefsHelper(this)
+        billingManager = BillingManager(this).also { bm ->
+            bm.start { runOnUiThread { setupProFeatures() } }
+        }
         setupMasterToggle()
         setupWidgetButton()
         setupTriggers()
         setupAlertBehaviour()
         setupFixActions()
         setupProFeatures()
+        setupDebugTrialShortcut()
         updatePermissionsSection()
 
         if (intent.getStringExtra(EXTRA_SCROLL_TO) == SCROLL_AUTO_FIX) {
@@ -56,6 +63,11 @@ class SettingsActivity : AppCompatActivity() {
                 binding.nestedScrollView.smoothScrollTo(0, binding.switchAutoFixEnabled.top)
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        billingManager?.destroy()
     }
 
     override fun onResume() {
@@ -304,9 +316,10 @@ class SettingsActivity : AppCompatActivity() {
             "default" to "Default", "dark" to "Dark", "mono" to "Mono", "vibrant" to "Vibrant",
             "pastel" to "Pastel", "amoled" to "Amoled", "warm" to "Warm", "cool" to "Cool"
         )
+        binding.chipGroupTheme.removeAllViews()
         val paletteHelper = OverlayBadgeManager(this, {}, {})
         themeEntries.forEach { (id, label) ->
-            val alertColor = paletteHelper.conditionColor(AlertCondition.SILENT, id)
+            val alertColor = paletteHelper.conditionColor(AlertCondition.DND, id)
             val isLight = id == "pastel"
             binding.chipGroupTheme.addView(Chip(this).apply {
                 text = label
@@ -320,12 +333,46 @@ class SettingsActivity : AppCompatActivity() {
             })
         }
 
-        // Pro upgrade row visibility
-        val upgradeVisible = if (!isPro) View.VISIBLE else View.GONE
+        // Panel background mode chips
+        val panelModes = listOf("light" to getString(R.string.panel_mode_light),
+                                "dark"  to getString(R.string.panel_mode_dark),
+                                "system" to getString(R.string.panel_mode_system))
+        binding.chipGroupPanelMode.removeAllViews()
+        panelModes.forEach { (id, label) ->
+            binding.chipGroupPanelMode.addView(Chip(this).apply {
+                text = label
+                isCheckable = true
+                isEnabled = isPro
+                isChecked = prefs.overlayPanelMode == id
+                alpha = if (isPro) 1f else 0.4f
+                setOnClickListener { if (prefs.isPro) { prefs.overlayPanelMode = id; notifyService() } }
+            })
+        }
+
+        // Pro upgrade row — visible whenever not purchased (including during trial)
+        val upgradeVisible = if (!prefs.hasPurchasedPro) View.VISIBLE else View.GONE
         binding.dividerProUpgrade.visibility = upgradeVisible
         binding.layoutProUpgrade.visibility = upgradeVisible
+        binding.txtProLocked.text = when {
+            prefs.isInTrial -> {
+                val days = prefs.trialDaysRemaining
+                val dayWord = if (days == 1) "1 day" else "$days days"
+                "$dayWord remaining in your free trial"
+            }
+            else -> getString(R.string.trial_expired)
+        }
+        binding.btnRestorePro.setOnClickListener {
+            billingManager?.restorePurchases { restored ->
+                runOnUiThread {
+                    val msg = if (restored) getString(R.string.restore_pro_success)
+                              else getString(R.string.restore_pro_not_found)
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                    if (restored) setupProFeatures()
+                }
+            }
+        }
         binding.btnUpgradePro.setOnClickListener {
-            Toast.makeText(this, "Pro upgrade coming soon!", Toast.LENGTH_SHORT).show()
+            billingManager?.launchPurchaseFlow(this) { runOnUiThread { setupProFeatures() } }
         }
     }
 
@@ -402,6 +449,23 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun updatePermissionsSection() {
+        // POST_NOTIFICATIONS (Android 13+ only)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasPostNotif = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            binding.layoutPostNotificationsPerm.visibility = View.VISIBLE
+            binding.dividerPostNotifications.visibility = View.VISIBLE
+            binding.statusPostNotifications.text = if (hasPostNotif) getString(R.string.granted) else getString(R.string.not_granted)
+            binding.btnFixPostNotifications.visibility = if (!hasPostNotif) View.VISIBLE else View.GONE
+            binding.btnFixPostNotifications.setOnClickListener {
+                settingsLauncher.launch(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                    putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                })
+            }
+        } else {
+            binding.layoutPostNotificationsPerm.visibility = View.GONE
+            binding.dividerPostNotifications.visibility = View.GONE
+        }
+
         val hasOverlay = Settings.canDrawOverlays(this)
         val hasDnd = (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
             .isNotificationPolicyAccessGranted
@@ -452,6 +516,21 @@ class SettingsActivity : AppCompatActivity() {
                 }
                 .setNegativeButton("Cancel", null)
                 .show()
+        }
+    }
+
+    private fun setupDebugTrialShortcut() {
+        if (!BuildConfig.DEBUG) return
+        binding.txtSectionPro.setOnLongClickListener {
+            if (prefs.isInTrial) {
+                prefs.trialStartMs = System.currentTimeMillis() - PrefsHelper.TRIAL_DURATION_MS - 86_400_000L
+                Toast.makeText(this, "[Debug] Trial expired", Toast.LENGTH_SHORT).show()
+            } else {
+                prefs.trialStartMs = System.currentTimeMillis()
+                Toast.makeText(this, "[Debug] Trial reset to today", Toast.LENGTH_SHORT).show()
+            }
+            setupProFeatures()
+            true
         }
     }
 
