@@ -59,6 +59,18 @@ class PrefsHelper(context: Context) {
         get() = prefs.getFloat("badge_y", -1f)
         set(v) = prefs.edit().putFloat("badge_y", v).apply()
 
+    var badgeDocked: Boolean
+        get() = prefs.getBoolean("badge_docked", false)
+        set(v) = prefs.edit().putBoolean("badge_docked", v).apply()
+
+    var badgeDockedRight: Boolean
+        get() = prefs.getBoolean("badge_docked_right", true)
+        set(v) = prefs.edit().putBoolean("badge_docked_right", v).apply()
+
+    var badgeDockedY: Float
+        get() = prefs.getFloat("badge_docked_y", 900f)
+        set(v) = prefs.edit().putFloat("badge_docked_y", v).apply()
+
     var onboardingComplete: Boolean
         get() = prefs.getBoolean("onboarding_complete", false)
         set(v) = prefs.edit().putBoolean("onboarding_complete", v).apply()

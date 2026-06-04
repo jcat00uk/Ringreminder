@@ -3,22 +3,44 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+// Load signing credentials from keystore.gradle if present (gitignored, never committed)
+def keystoreScript = rootProject.file('keystore.gradle')
+if (keystoreScript.exists()) {
+    apply from: keystoreScript
+}
+
 android {
     namespace 'com.jcat.ringreminder'
     compileSdk 34
+
+    signingConfigs {
+        release {
+            storeFile file(project.findProperty('KEYSTORE_FILE') ?: '../jcatkey.jks')
+            storePassword (project.findProperty('KEYSTORE_PASSWORD') ?: '') as String
+            keyAlias (project.findProperty('KEY_ALIAS') ?: '') as String
+            keyPassword (project.findProperty('KEY_PASSWORD') ?: '') as String
+        }
+    }
 
     defaultConfig {
         applicationId "com.jcat.ringreminder"
         minSdk 26
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode (project.findProperty('appVersionCode') as Integer) ?: 1
+        versionName (project.findProperty('appVersionName') ?: '1.0-dev') as String
     }
 
     buildTypes {
         release {
+            if (project.hasProperty('KEYSTORE_FILE')) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
         }
     }
 

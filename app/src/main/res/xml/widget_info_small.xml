@@ -4,5 +4,6 @@
     android:minHeight="40dp"
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/widget_small"
+    android:previewImage="@drawable/preview_widget_small"
     android:resizeMode="none"
     android:widgetCategory="home_screen" />

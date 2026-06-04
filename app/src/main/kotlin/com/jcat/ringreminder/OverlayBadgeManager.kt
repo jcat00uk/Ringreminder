@@ -100,6 +100,13 @@ class OverlayBadgeManager(
             windowManager.addView(view, layoutParams)
         } catch (_: Exception) {
             rootView = null
+            return
+        }
+
+        if (prefs.badgeDocked) {
+            layoutParams.y = prefs.badgeDockedY.toInt()
+            try { windowManager.updateViewLayout(view, layoutParams) } catch (_: Exception) {}
+            snapToEdge(view, prefs.badgeDockedRight)
         }
     }
 
@@ -518,10 +525,14 @@ class OverlayBadgeManager(
                         val dx = event.rawX - initialTouchX
                         val screenWidth = context.resources.displayMetrics.widthPixels
                         when {
-                            abs(dx) <= dragThreshold -> preDockY = layoutParams.y
+                            abs(dx) <= dragThreshold -> {
+                                preDockY = layoutParams.y
+                                prefs.badgeDockedY = layoutParams.y.toFloat()
+                            }
                             event.rawX < screenWidth * 0.25f || event.rawX > screenWidth * 0.75f ->
                                 snapToEdge(view, snapRight = event.rawX > screenWidth / 2f)
                             else -> {
+                                prefs.badgeDocked = false
                                 prefs.badgeX = layoutParams.x.toFloat()
                                 prefs.badgeY = layoutParams.y.toFloat()
                                 transitionTo(view, State.COLLAPSED)
@@ -545,6 +556,9 @@ class OverlayBadgeManager(
         val peekPx = (15 * density).toInt()
         layoutParams.x = if (snapRight) screenWidth - peekPx else -(nubSizePx - peekPx)
         try { windowManager.updateViewLayout(view, layoutParams) } catch (_: Exception) {}
+        prefs.badgeDocked = true
+        prefs.badgeDockedRight = snapRight
+        prefs.badgeDockedY = layoutParams.y.toFloat()
         transitionTo(view, State.DOCKED)
     }
 

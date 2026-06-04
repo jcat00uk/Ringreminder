@@ -324,6 +324,7 @@
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_overlay" android:textSize="15sp" />
+                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboard_overlay_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
                             <TextView android:id="@+id/status_overlay" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
                         <Button android:id="@+id/btn_fix_overlay" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
@@ -335,6 +336,7 @@
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_dnd" android:textSize="15sp" />
+                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboard_dnd_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
                             <TextView android:id="@+id/status_dnd" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
                         <Button android:id="@+id/btn_fix_dnd_perm" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
@@ -346,6 +348,7 @@
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_battery" android:textSize="15sp" />
+                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboard_battery_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
                             <TextView android:id="@+id/status_battery" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
                         <Button android:id="@+id/btn_fix_battery" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
@@ -357,6 +360,7 @@
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_notification_listener" android:textSize="15sp" />
+                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/perm_notification_listener_reason" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
                             <TextView android:id="@+id/status_notification_listener" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
                         <Button android:id="@+id/btn_fix_notification_listener" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
@@ -368,6 +372,7 @@
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_usage_stats" android:textSize="15sp" />
+                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/perm_usage_stats_reason" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
                             <TextView android:id="@+id/status_usage_stats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
                         </LinearLayout>
                         <Button android:id="@+id/btn_fix_usage_stats" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />

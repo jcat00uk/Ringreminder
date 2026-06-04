@@ -9,3 +9,7 @@
 .caches
 app/build
 gradle/wrapper/gradle-wrapper.jar
+app/keystore.properties
+keystore.gradle
+*.jks
+*.keystore

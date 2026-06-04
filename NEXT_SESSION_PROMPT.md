@@ -6,10 +6,11 @@ Native Android Kotlin app (`com.jcat.ringreminder`, minSdk 26, targetSdk 34). No
 
 Working directory: `s:\Coding\Ringreminder`
 
-Build command (use this, not gradlew):
+Build command (use gradlew — Gradle 8.14.5, Java 25 compatible):
 ```
-& "C:\Users\John\.gradle\wrapper\dists\gradle-8.8-bin\dl7vupf4psengwqhwktix4v1\gradle-8.8\bin\gradle.bat" assembleDebug
+S:\Coding\Ringreminder\gradlew.bat assembleDebug
 ```
+Or use `1build.bat` for the full menu (debug/release APK/AAB with versioning).
 
 ---
 
