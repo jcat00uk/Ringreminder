@@ -30,7 +30,8 @@ import kotlin.math.abs
 class OverlayBadgeManager(
     private val context: Context,
     private val onFixRequested: () -> Unit,
-    private val onAutoFixScheduled: (durationMs: Long) -> Unit
+    private val onAutoFixScheduled: (durationMs: Long) -> Unit,
+    private val onUserDismissed: () -> Unit = {}
 ) {
     private val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private var rootView: View? = null
@@ -432,6 +433,7 @@ class OverlayBadgeManager(
         } else {
             prefs.snoozeUntilMs = System.currentTimeMillis() + durationMs
         }
+        onUserDismissed()
         hide()
         notifyService()
     }
@@ -446,7 +448,8 @@ class OverlayBadgeManager(
                 cameFromDocked = false
                 snapToEdge(view, snapRight = dockedOnRight)
             } else {
-                transitionTo(view, State.COLLAPSED)
+                onUserDismissed()
+                if (rootView != null) transitionTo(view, State.COLLAPSED)
             }
         }
 

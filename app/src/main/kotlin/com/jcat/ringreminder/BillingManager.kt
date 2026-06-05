@@ -140,6 +140,12 @@ class BillingManager(private val context: Context) {
         ) {}
     }
 
+    val status: String
+        get() {
+            val client = billingClient ?: return "Not started"
+            return if (client.isReady) "Connected" else "Connecting / Disconnected"
+        }
+
     fun destroy() {
         billingClient?.endConnection()
         billingClient = null

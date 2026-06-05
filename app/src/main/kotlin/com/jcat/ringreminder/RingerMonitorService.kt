@@ -32,6 +32,7 @@ class RingerMonitorService : Service() {
         @Volatile var isPaused = false
         @Volatile var lastResult: EvaluationResult? = null
         @Volatile var instance: RingerMonitorService? = null
+        @Volatile var overlayUserPinned = false
 
         const val ACTION_REFRESH = "com.jcat.ringreminder.ACTION_REFRESH"
         const val ACTION_AUTO_FIX = "com.jcat.ringreminder.ACTION_AUTO_FIX"
@@ -96,7 +97,10 @@ class RingerMonitorService : Service() {
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationHelper = NotificationHelper(this)
-        overlayBadgeManager = OverlayBadgeManager(this, ::applyFixes, ::scheduleAutoFix)
+        overlayBadgeManager = OverlayBadgeManager(this, ::applyFixes, ::scheduleAutoFix) {
+            overlayUserPinned = false
+            evaluateAndUpdate()
+        }
 
         notificationHelper.createChannel()
 
@@ -129,7 +133,14 @@ class RingerMonitorService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             NotificationHelper.ACTION_FIX_NOW -> applyFixes()
-            ACTION_EXPAND_OVERLAY -> overlayBadgeManager.expandCard()
+            ACTION_EXPAND_OVERLAY -> {
+                overlayUserPinned = true
+                val pinResult = lastResult
+                if (pinResult != null && pinResult.isAlertActive) {
+                    overlayBadgeManager.show(pinResult)
+                    overlayBadgeManager.expandCard()
+                }
+            }
             ACTION_REFRESH -> evaluateAndUpdate()
             ACTION_AUTO_FIX -> {
                 applyFixes()
@@ -253,18 +264,14 @@ class RingerMonitorService : Service() {
         }
 
         val state = getCurrentRingerState()
-        val result = if (isWithinSchedule()) {
-            evaluator.evaluate(
-                state,
-                prefs.triggerSilent,
-                prefs.triggerVibrate,
-                prefs.triggerDnd,
-                prefs.triggerLowVolume,
-                prefs.thresholdVolumePercent
-            )
-        } else {
-            EvaluationResult(emptyList(), null)
-        }
+        val result = evaluator.evaluate(
+            state,
+            prefs.triggerSilent,
+            prefs.triggerVibrate,
+            prefs.triggerDnd,
+            prefs.triggerLowVolume,
+            prefs.thresholdVolumePercent
+        )
 
         notificationManager.notify(
             NotificationHelper.NOTIFICATION_ID,
@@ -276,23 +283,33 @@ class RingerMonitorService : Service() {
         if (result.isAlertActive) {
             if (prefs.alertFirstSeenMs == 0L) prefs.alertFirstSeenMs = now
 
-            var snoozed = isSnoozed(result)
-            if (snoozed && prefs.nudgeEnabled && prefs.alertFirstSeenMs > 0L) {
-                if (now - prefs.alertFirstSeenMs >= prefs.nudgeIntervalMinutes * 60_000L) {
-                    clearSnooze()
-                    snoozed = false
+            if (!isWithinSchedule()) {
+                // Outside schedule — suppress unless user explicitly pinned via widget tap
+                if (!overlayUserPinned) {
+                    overlayBadgeManager.hide()
+                    notificationHelper.cancelAlertNotification()
+                } else {
+                    overlayBadgeManager.show(result)
                 }
-            }
-
-            if (snoozed || isSuppressedByForegroundApp()) {
-                overlayBadgeManager.hide()
-                notificationHelper.cancelAlertNotification()
             } else {
-                notificationManager.notify(
-                    NotificationHelper.ALERT_NOTIFICATION_ID,
-                    notificationHelper.buildAlertNotification(result, prefs.isPro && prefs.lockScreenAlert)
-                )
-                overlayBadgeManager.show(result)
+                var snoozed = isSnoozed(result)
+                if (snoozed && prefs.nudgeEnabled && prefs.alertFirstSeenMs > 0L) {
+                    if (now - prefs.alertFirstSeenMs >= prefs.nudgeIntervalMinutes * 60_000L) {
+                        clearSnooze()
+                        snoozed = false
+                    }
+                }
+
+                if ((snoozed || isSuppressedByForegroundApp()) && !overlayUserPinned) {
+                    overlayBadgeManager.hide()
+                    notificationHelper.cancelAlertNotification()
+                } else {
+                    notificationManager.notify(
+                        NotificationHelper.ALERT_NOTIFICATION_ID,
+                        notificationHelper.buildAlertNotification(result, prefs.isPro && prefs.lockScreenAlert)
+                    )
+                    overlayBadgeManager.show(result)
+                }
             }
         } else {
             prefs.alertFirstSeenMs = 0L
@@ -417,6 +434,8 @@ class RingerMonitorService : Service() {
     }
 
     fun applyFixes() {
+        clearSnooze()
+        overlayUserPinned = false
         if (prefs.hapticOnFix) {
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

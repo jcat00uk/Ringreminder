@@ -219,4 +219,8 @@ class PrefsHelper(context: Context) {
     var pulseOnMutedAlert: Boolean
         get() = prefs.getBoolean("pulse_on_muted_alert", false)
         set(v) = prefs.edit().putBoolean("pulse_on_muted_alert", v).apply()
+
+    var devModeEnabled: Boolean
+        get() = prefs.getBoolean("dev_mode_enabled", false)
+        set(v) = prefs.edit().putBoolean("dev_mode_enabled", v).apply()
 }

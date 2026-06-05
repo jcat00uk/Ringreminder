@@ -146,13 +146,17 @@ POST_NOTIFICATIONS row is hidden on Android < 13.
 
 ---
 
+## Next session — start here
+
+1. **Billing reconnect** — check if the Play Store cache clear fixed the Pro revocation issue (user refunded 6 hours before session end, expected to self-resolve within 24h). If not: fix `onBillingServiceDisconnected()` to reconnect + retry, and add a "Verify purchase" option visible to Pro users (upgrade row is hidden when `hasPurchasedPro=true` so there's no manual re-check available)
+2. **AGP upgrade** — bump AGP `8.2.2` → `8.7.x` and Kotlin `1.9.22` → `2.0.x`; run build and fix any K2 compiler complaints; then remove `android.suppressUnsupportedCompileSdk=35` from `gradle.properties` and `lint { checkReleaseBuilds false }` from `app/build.gradle`
+
+---
+
 ## Roadmap (future sprints, do not implement yet)
 
 ### Near-term
-- **Billing reconnect** — `onBillingServiceDisconnected()` currently empty; add reconnect + retry so `refresh()` doesn't silently fail
-- **Billing re-check for Pro users** — upgrade row hidden when `hasPurchasedPro=true`; add "Verify purchase" option visible to Pro users
 - **Widget preview image** — supply proper `previewImage` drawable for widget picker
-- **AGP upgrade** — bump AGP 8.2.2 → 8.7+ and Kotlin 1.9.22 → 2.0.x; remove `suppressUnsupportedCompileSdk=35` and `lint { checkReleaseBuilds false }` once done
 
 ### Longer horizon
 - **Alert profiles** — named trigger presets (Work/Gym/Sleep), switch from QS tile

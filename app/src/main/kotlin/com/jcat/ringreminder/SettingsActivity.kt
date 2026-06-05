@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,6 +34,8 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var prefs: PrefsHelper
     private var billingManager: BillingManager? = null
+    private var devTapCount = 0
+    private var lastDevTapTime = 0L
 
     private val settingsLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -55,7 +58,7 @@ class SettingsActivity : AppCompatActivity() {
         setupAlertBehaviour()
         setupFixActions()
         setupProFeatures()
-        setupDebugTrialShortcut()
+        setupDevMode()
         updatePermissionsSection()
 
         if (intent.getStringExtra(EXTRA_SCROLL_TO) == SCROLL_AUTO_FIX) {
@@ -519,18 +522,159 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupDebugTrialShortcut() {
-        if (!BuildConfig.DEBUG) return
-        binding.txtSectionPro.setOnLongClickListener {
-            if (prefs.isInTrial) {
-                prefs.trialStartMs = System.currentTimeMillis() - PrefsHelper.TRIAL_DURATION_MS - 86_400_000L
-                Toast.makeText(this, "[Debug] Trial expired", Toast.LENGTH_SHORT).show()
-            } else {
-                prefs.trialStartMs = System.currentTimeMillis()
-                Toast.makeText(this, "[Debug] Trial reset to today", Toast.LENGTH_SHORT).show()
+    private fun setupDevMode() {
+        if (prefs.devModeEnabled) refreshDevPanel()
+
+        binding.txtSectionPro.setOnClickListener {
+            val now = System.currentTimeMillis()
+            if (now - lastDevTapTime > 3000L) devTapCount = 0
+            lastDevTapTime = now
+            devTapCount++
+            if (devTapCount >= 7) {
+                devTapCount = 0
+                if (!prefs.devModeEnabled) {
+                    prefs.devModeEnabled = true
+                    Toast.makeText(this, "Developer mode enabled", Toast.LENGTH_SHORT).show()
+                    refreshDevPanel()
+                }
             }
-            setupProFeatures()
+        }
+
+        binding.txtSectionPro.setOnLongClickListener {
+            if (prefs.devModeEnabled) {
+                prefs.devModeEnabled = false
+                binding.devPanelCard.visibility = View.GONE
+                Toast.makeText(this, "Developer mode disabled", Toast.LENGTH_SHORT).show()
+            }
             true
+        }
+    }
+
+    private fun refreshDevPanel() {
+        if (!prefs.devModeEnabled) {
+            binding.devPanelCard.visibility = View.GONE
+            return
+        }
+        binding.devPanelCard.visibility = View.VISIBLE
+
+        val sdf = java.text.SimpleDateFormat("dd MMM yyyy HH:mm", java.util.Locale.getDefault())
+        val now = System.currentTimeMillis()
+        val trialExpiry = java.util.Date(prefs.trialStartMs + PrefsHelper.TRIAL_DURATION_MS)
+
+        val snoozeUntil = prefs.snoozeUntilMs
+        val snoozeText = when {
+            snoozeUntil == 0L -> "None"
+            snoozeUntil == Long.MAX_VALUE -> "Until unmuted (${prefs.snoozedCondition})"
+            snoozeUntil > now -> "Until ${sdf.format(java.util.Date(snoozeUntil))} (${prefs.snoozedCondition})"
+            else -> "Expired"
+        }
+
+        val schedStart = String.format("%02d:%02d", prefs.scheduleStartHour, prefs.scheduleStartMinute)
+        val schedEnd = String.format("%02d:%02d", prefs.scheduleEndHour, prefs.scheduleEndMinute)
+        val cal = java.util.Calendar.getInstance()
+        val nowMin = cal.get(java.util.Calendar.HOUR_OF_DAY) * 60 + cal.get(java.util.Calendar.MINUTE)
+        val startMin = prefs.scheduleStartHour * 60 + prefs.scheduleStartMinute
+        val endMin = prefs.scheduleEndHour * 60 + prefs.scheduleEndMinute
+        val withinSchedule = if (!prefs.isPro || !prefs.scheduleEnabled) true
+            else if (startMin <= endMin) nowMin in startMin..endMin
+            else nowMin >= startMin || nowMin <= endMin
+
+        val autoFixMs = prefs.autoFixScheduledMs
+        val autoFixText = if (autoFixMs > 0 && autoFixMs > now)
+            sdf.format(java.util.Date(autoFixMs)) else "None"
+        val alertSeenMs = prefs.alertFirstSeenMs
+        val alertSeenText = if (alertSeenMs > 0) sdf.format(java.util.Date(alertSeenMs)) else "None"
+
+        val lastResult = RingerMonitorService.lastResult
+        val conditionText = lastResult?.primaryCondition?.name ?: "None"
+        val activeText = if (lastResult?.activeConditions.isNullOrEmpty()) "None"
+            else lastResult!!.activeConditions.joinToString { it.name }
+
+        val nmgr = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val pmgr = getSystemService(POWER_SERVICE) as PowerManager
+        val hasOverlay = android.provider.Settings.canDrawOverlays(this)
+        val hasDnd = nmgr.isNotificationPolicyAccessGranted
+        val hasBattery = pmgr.isIgnoringBatteryOptimizations(packageName)
+        val hasNotifListener = hasNotificationListenerPermission()
+        val hasUsage = hasUsageStatsPermission()
+        val hasPostNotif = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            else null
+        fun yn(v: Boolean) = if (v) "Yes" else "NO"
+
+        binding.txtDevInfo.text = buildString {
+            appendLine("── Device ──────────────────────")
+            appendLine("Time now:        ${sdf.format(java.util.Date(now))}")
+            appendLine("Android API:     ${Build.VERSION.SDK_INT}")
+            val pInfo = packageManager.getPackageInfo(packageName, 0)
+            val vCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pInfo.longVersionCode else pInfo.versionCode.toLong()
+            appendLine("App version:     ${pInfo.versionName} ($vCode)")
+            appendLine()
+            appendLine("── Pro Status ──────────────────")
+            appendLine("isPro:           ${prefs.isPro}")
+            appendLine("hasPurchasedPro: ${prefs.hasPurchasedPro}")
+            appendLine("isInTrial:       ${prefs.isInTrial}")
+            appendLine("Trial started:   ${sdf.format(java.util.Date(prefs.trialStartMs))}")
+            appendLine("Trial expires:   ${sdf.format(trialExpiry)}")
+            appendLine("Days remaining:  ${prefs.trialDaysRemaining}")
+            appendLine("Billing client:  ${billingManager?.status ?: "null"}")
+            appendLine()
+            appendLine("── Service ─────────────────────")
+            appendLine("Running:         ${RingerMonitorService.isRunning}")
+            appendLine("Paused:          ${RingerMonitorService.isPaused}")
+            appendLine("Overlay pinned:  ${RingerMonitorService.overlayUserPinned}")
+            appendLine("Primary cond:    $conditionText")
+            appendLine("Active conds:    $activeText")
+            appendLine()
+            appendLine("── Schedule ────────────────────")
+            appendLine("Enabled:         ${prefs.scheduleEnabled}")
+            appendLine("Window:          $schedStart → $schedEnd")
+            appendLine("Within schedule: $withinSchedule")
+            appendLine()
+            appendLine("── Snooze ──────────────────────")
+            appendLine("Active:          $snoozeText")
+            appendLine()
+            appendLine("── Auto-fix ────────────────────")
+            appendLine("Next one-shot:   $autoFixText")
+            appendLine("Daily last fired:${prefs.autoFixLastFiredDate.ifEmpty { "Never" }}")
+            appendLine("Alert first seen:$alertSeenText")
+            appendLine()
+            appendLine("── Permissions ─────────────────")
+            if (hasPostNotif != null) appendLine("Notifications:   ${yn(hasPostNotif)}")
+            appendLine("Overlay:         ${yn(hasOverlay)}")
+            appendLine("DND access:      ${yn(hasDnd)}")
+            appendLine("Battery exempt:  ${yn(hasBattery)}")
+            appendLine("Notif listener:  ${yn(hasNotifListener)}")
+            append("Usage stats:     ${yn(hasUsage)}")
+        }
+
+        binding.btnDevExpireTrial.setOnClickListener {
+            prefs.trialStartMs = System.currentTimeMillis() - PrefsHelper.TRIAL_DURATION_MS - 1L
+            Toast.makeText(this, "Trial expired", Toast.LENGTH_SHORT).show()
+            setupProFeatures()
+            refreshDevPanel()
+        }
+        var resetRunnable: Runnable? = null
+        binding.btnDevRefresh.setOnClickListener { refreshDevPanel() }
+        binding.btnDevRefresh.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    resetRunnable = Runnable {
+                        prefs.trialStartMs = System.currentTimeMillis()
+                        Toast.makeText(this, "Trial reset to today", Toast.LENGTH_SHORT).show()
+                        setupProFeatures()
+                        refreshDevPanel()
+                    }
+                    v.postDelayed(resetRunnable, 5000L)
+                    false
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    v.removeCallbacks(resetRunnable)
+                    resetRunnable = null
+                    false
+                }
+                else -> false
+            }
         }
     }
 
