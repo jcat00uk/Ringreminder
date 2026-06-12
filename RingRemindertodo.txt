@@ -1,0 +1,15 @@
+Dev mode
+, tap ring reminder pro 7 times
+hold on it to disable
+hold on refresh to reset trial
+
+I want to add a hidden developer/pro mode activation feature to this Android app. The mechanism should work exactly like this implementation:
+
+A tap sequence on two separate UI elements activates a key-entry dialog: 7 taps on one element within 4 seconds, then 2 taps on a second element within 4 seconds of the 7th tap
+When the sequence is detected, show an AlertDialog with an OutlinedTextField for the user to paste a key
+The key is verified by computing its SHA-256 hash and comparing to a stored constant: b2280f06c2a7401da8dc71f858c1d513d491c0b3ad80823f6e8cb8d2de7fc3ea
+If the hash matches, store dev_mode_active = true in EncryptedSharedPreferences and grant Pro/developer status
+A long-press (5+ seconds) on the same first element deactivates developer mode
+Developer mode persists across app restarts until explicitly deactivated
+The same key hash is used across multiple apps by the same developer. Implement this using the same pattern — EncryptedSharedPreferences, SHA-256 comparison, no network calls.
+

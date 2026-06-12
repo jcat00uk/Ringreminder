@@ -23,12 +23,18 @@ import com.google.android.material.chip.Chip
 import com.jcat.ringreminder.databinding.ActivitySettingsBinding
 import android.Manifest
 import android.content.pm.PackageManager
+import android.text.InputType
+import android.widget.EditText
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import java.security.MessageDigest
 
 class SettingsActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_SCROLL_TO = "scroll_to"
         const val SCROLL_AUTO_FIX = "auto_fix"
+        private const val DEV_KEY_HASH = "b2280f06c2a7401da8dc71f858c1d513d491c0b3ad80823f6e8cb8d2de7fc3ea"
     }
 
     private lateinit var binding: ActivitySettingsBinding
@@ -36,6 +42,8 @@ class SettingsActivity : AppCompatActivity() {
     private var billingManager: BillingManager? = null
     private var devTapCount = 0
     private var lastDevTapTime = 0L
+    private var secondTapCount = 0
+    private var lastSecondTapTime = 0L
 
     private val settingsLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -352,8 +360,8 @@ class SettingsActivity : AppCompatActivity() {
             })
         }
 
-        // Pro upgrade row — visible whenever not purchased (including during trial)
-        val upgradeVisible = if (!prefs.hasPurchasedPro) View.VISIBLE else View.GONE
+        // Pro upgrade row — visible whenever not purchased and dev mode not active
+        val upgradeVisible = if (!prefs.hasPurchasedPro && !prefs.devModeActive) View.VISIBLE else View.GONE
         binding.dividerProUpgrade.visibility = upgradeVisible
         binding.layoutProUpgrade.visibility = upgradeVisible
         binding.txtProLocked.text = when {
@@ -527,27 +535,87 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.txtSectionPro.setOnClickListener {
             val now = System.currentTimeMillis()
-            if (now - lastDevTapTime > 3000L) devTapCount = 0
+            if (now - lastDevTapTime > 4000L) devTapCount = 0
             lastDevTapTime = now
             devTapCount++
             if (devTapCount >= 7) {
                 devTapCount = 0
-                if (!prefs.devModeEnabled) {
-                    prefs.devModeEnabled = true
-                    Toast.makeText(this, "Developer mode enabled", Toast.LENGTH_SHORT).show()
-                    refreshDevPanel()
+                lastSecondTapTime = now
+                secondTapCount = 0
+                // Register second-element listener to complete the sequence
+                binding.layoutProUpgrade.setOnClickListener secondTap@{
+                    val now2 = System.currentTimeMillis()
+                    if (now2 - lastSecondTapTime > 4000L) {
+                        secondTapCount = 0
+                        binding.layoutProUpgrade.setOnClickListener(null)
+                        return@secondTap
+                    }
+                    lastSecondTapTime = now2
+                    secondTapCount++
+                    if (secondTapCount >= 2) {
+                        secondTapCount = 0
+                        binding.layoutProUpgrade.setOnClickListener(null)
+                        showDevKeyDialog()
+                    }
                 }
             }
         }
 
-        binding.txtSectionPro.setOnLongClickListener {
-            if (prefs.devModeEnabled) {
-                prefs.devModeEnabled = false
-                binding.devPanelCard.visibility = View.GONE
-                Toast.makeText(this, "Developer mode disabled", Toast.LENGTH_SHORT).show()
+        var deactivateRunnable: Runnable? = null
+        binding.txtSectionPro.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    deactivateRunnable = Runnable {
+                        if (prefs.devModeActive) {
+                            prefs.devModeActive = false
+                            prefs.devModeEnabled = false
+                            binding.devPanelCard.visibility = View.GONE
+                            Toast.makeText(this, "Developer mode disabled", Toast.LENGTH_SHORT).show()
+                            setupProFeatures()
+                        }
+                    }
+                    binding.txtSectionPro.postDelayed(deactivateRunnable, 5000L)
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    binding.txtSectionPro.removeCallbacks(deactivateRunnable)
+                    deactivateRunnable = null
+                }
             }
-            true
+            false  // let click events still pass through to the tap counter
         }
+    }
+
+    private fun showDevKeyDialog() {
+        val inputLayout = TextInputLayout(this).apply {
+            hint = "Developer key"
+            endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
+            setPadding(48, 16, 48, 0)
+        }
+        val input = TextInputEditText(inputLayout.context).apply {
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+        inputLayout.addView(input)
+
+        AlertDialog.Builder(this)
+            .setTitle("Developer Access")
+            .setView(inputLayout)
+            .setPositiveButton("Activate") { _, _ ->
+                val key = input.text?.toString() ?: ""
+                val hash = MessageDigest.getInstance("SHA-256")
+                    .digest(key.toByteArray())
+                    .joinToString("") { "%02x".format(it) }
+                if (hash == DEV_KEY_HASH) {
+                    prefs.devModeActive = true
+                    prefs.devModeEnabled = true
+                    Toast.makeText(this, "Developer mode enabled", Toast.LENGTH_SHORT).show()
+                    setupProFeatures()
+                    refreshDevPanel()
+                } else {
+                    Toast.makeText(this, "Invalid key", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun refreshDevPanel() {
@@ -612,6 +680,7 @@ class SettingsActivity : AppCompatActivity() {
             appendLine()
             appendLine("── Pro Status ──────────────────")
             appendLine("isPro:           ${prefs.isPro}")
+            appendLine("devModeActive:   ${prefs.devModeActive}")
             appendLine("hasPurchasedPro: ${prefs.hasPurchasedPro}")
             appendLine("isInTrial:       ${prefs.isInTrial}")
             appendLine("Trial started:   ${sdf.format(java.util.Date(prefs.trialStartMs))}")

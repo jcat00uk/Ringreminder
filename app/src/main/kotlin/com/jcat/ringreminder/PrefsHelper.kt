@@ -2,13 +2,29 @@ package com.jcat.ringreminder
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 
 class PrefsHelper(context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
+    private val securePrefs: SharedPreferences by lazy {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        EncryptedSharedPreferences.create(
+            context,
+            SECURE_PREFS_NAME,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
     companion object {
         const val PREFS_NAME = "ring_reminder_prefs"
+        const val SECURE_PREFS_NAME = "ring_reminder_secure_prefs"
         const val TRIAL_DURATION_MS = 7L * 24 * 60 * 60 * 1000L
     }
 
@@ -101,8 +117,12 @@ class PrefsHelper(context: Context) {
             return ((remaining + 86_399_999L) / 86_400_000L).toInt().coerceAtLeast(0)
         }
 
+    var devModeActive: Boolean
+        get() = securePrefs.getBoolean("dev_mode_active", false)
+        set(v) = securePrefs.edit().putBoolean("dev_mode_active", v).apply()
+
     var isPro: Boolean
-        get() = BuildConfig.DEBUG || hasPurchasedPro || isInTrial
+        get() = BuildConfig.DEBUG || hasPurchasedPro || isInTrial || devModeActive
         set(v) { hasPurchasedPro = v }
 
     // Scheduling
