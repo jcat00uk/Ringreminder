@@ -4,24 +4,34 @@
     android:height="56dp"
     android:viewportWidth="112"
     android:viewportHeight="56">
+
+    <!-- Background card -->
     <path
-        android:fillColor="#1565C0"
-        android:pathData="M8,0L104,0Q112,0,112,8L112,48Q112,56,104,56L8,56Q0,56,0,48L0,8Q0,0,8,0Z"/>
-    <group
-        android:translateX="4"
-        android:translateY="4"
-        android:scaleX="2"
-        android:scaleY="2"
-        android:pivotX="0"
-        android:pivotY="0">
-        <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M12,22c1.1,0 2,-0.9 2,-2h-4c0,1.1 0.9,2 2,2zM18,16v-5c0,-3.07 -1.64,-5.64 -4.5,-6.32V4c0,-0.83 -0.67,-1.5 -1.5,-1.5s-1.5,0.67 -1.5,1.5v0.68C7.63,5.36 6,7.92 6,11v5l-2,2v1h16v-1l-2,-2z"/>
-    </group>
+        android:fillColor="#1976D2"
+        android:pathData="M10,0L102,0Q112,0,112,10L112,46Q112,56,102,56L10,56Q0,56,0,46L0,10Q0,0,10,0Z"/>
+
+    <!-- Bell body (left side, centred vertically in 56dp height) -->
     <path
-        android:fillColor="#99FFFFFF"
-        android:pathData="M58,18L100,18Q102,18,102,20L102,27Q102,29,100,29L58,29Q56,29,56,27L56,20Q56,18,58,18Z"/>
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,38c1.66,0 3,-1.34 3,-3L21,35c0,1.66 1.34,3 3,3zM33,28L33,21c0,-4.61 -2.46,-8.46 -6.75,-9.48L26.25,11c0,-1.24 -1.01,-2.25 -2.25,-2.25s-2.25,1.01 -2.25,2.25l0,0.52C17.47,12.54 15,16.39 15,21l0,7l-3,3l0,1.5l24,0l0,-1.5l-3,-3z"/>
+
+    <!-- Green status dot on bell -->
     <path
-        android:fillColor="#55FFFFFF"
-        android:pathData="M58,33L84,33Q86,33,86,35L86,39Q86,41,84,41L58,41Q56,41,56,39L56,35Q56,33,58,33Z"/>
+        android:fillColor="#4CAF50"
+        android:pathData="M34,14m-4,0a4,4,0,1,1,8,0a4,4,0,1,1,-8,0"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.2"
+        android:pathData="M31.5,14L33,15.5L36.5,12"/>
+
+    <!-- "Ring Reminder" label -->
+    <path
+        android:fillColor="#CCFFFFFF"
+        android:pathData="M46,20L96,20Q98,20,98,22L98,27Q98,29,96,29L46,29Q44,29,44,27L44,22Q44,20,46,20Z"/>
+
+    <!-- "Ringer OK" sub-label -->
+    <path
+        android:fillColor="#774CAF50"
+        android:pathData="M46,33L80,33Q82,33,82,35L82,39Q82,41,80,41L46,41Q44,41,44,39L44,35Q44,33,46,33Z"/>
 </vector>

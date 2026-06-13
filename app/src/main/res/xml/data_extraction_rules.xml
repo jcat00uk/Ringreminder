@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="ring_reminder_prefs.xml" key="is_pro" />
+        <exclude domain="sharedpref" path="ring_reminder_prefs.xml" key="trial_start_ms" />
+        <exclude domain="sharedpref" path="ring_reminder_secure_prefs.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="ring_reminder_prefs.xml" key="is_pro" />
+        <exclude domain="sharedpref" path="ring_reminder_prefs.xml" key="trial_start_ms" />
+        <exclude domain="sharedpref" path="ring_reminder_secure_prefs.xml" />
+    </device-transfer>
+</data-extraction-rules>

@@ -80,6 +80,7 @@
     <string name="granted">Granted ✓</string>
     <string name="not_granted">Not granted</string>
     <string name="fix">Fix</string>
+    <string name="permissions_all_granted">All permissions granted</string>
 
     <!-- Permission warning banner (MainActivity) -->
     <string name="perm_warning_title">Permissions need attention</string>
@@ -100,6 +101,9 @@
     <string name="restore_pro_success">Purchase restored — Pro unlocked!</string>
     <string name="restore_pro_not_found">No purchase found on this account.</string>
     <string name="trial_expired">Your 7-day free trial has ended · Upgrade to keep Pro features</string>
+    <string name="verify_purchase_label">Pro unlocked — thank you!</string>
+    <string name="verify_purchase">Verify purchase</string>
+    <string name="verify_purchase_ok">Purchase verified — Pro active.</string>
     <string name="schedule_enabled">Alert schedule</string>
     <string name="schedule_enabled_desc">Only show alerts during set hours</string>
     <string name="schedule_from">From</string>
@@ -187,6 +191,8 @@
     <string name="pulse_on_muted_alert_desc">Pulse the overlay badge when a call arrives while the phone is muted</string>
     <string name="perm_notification_listener">Notification access</string>
     <string name="perm_notification_listener_reason">Ring Reminder needs to know when notifications arrive so it can pulse the icon when your phone is muted. It never reads the content of your notifications.</string>
+    <string name="perm_exact_alarm">Schedule exact alarms</string>
+    <string name="perm_exact_alarm_desc">Allows auto-unmute to fire at the exact time you set. Without this, scheduled unmutes may be delayed by several minutes.</string>
 
     <!-- Widget settings -->
     <string name="section_widget">Home screen widget</string>

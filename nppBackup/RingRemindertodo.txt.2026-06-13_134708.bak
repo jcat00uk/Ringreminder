@@ -13,34 +13,3 @@ A long-press (5+ seconds) on the same first element deactivates developer mode
 Developer mode persists across app restarts until explicitly deactivated
 The same key hash is used across multiple apps by the same developer. Implement this using the same pattern — EncryptedSharedPreferences, SHA-256 comparison, no network calls.
 
-
-
------------
-
-
-Remove dead isPro setter from PrefsHelper
-
-Fix allowBackup — add backup_rules.xml and exclude purchase/trial prefs
-
-Gray out volume threshold chips when low-volume trigger is off
-
-Gray out restore volume chips when fix-volume switch is off
-
-Fix MainActivity.checkPermissions to check all 6 permissions
-
-Fix permissionsExpanded auto-collapse overriding manual expand
-
-Add SCHEDULE_EXACT_ALARM to permissions section (Android 12+)
-
-Add deep-link from MainActivity banner to permissions section
-
-Fix 24h time format to respect device locale
-
-Add dirty flag so notifyService only fires when settings changed
-
-Deduplicate startRingerService into shared extension
-
-Make BillingManager app-scoped singleton to prevent two instances
-
----------------------
-

@@ -7,10 +7,14 @@ import android.os.Build
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
-        val prefs = PrefsHelper(context)
-        if (!prefs.masterEnabled) return
+        when (intent.action) {
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_MY_PACKAGE_REPLACED -> startServiceIfEnabled(context)
+        }
+    }
 
+    private fun startServiceIfEnabled(context: Context) {
+        if (!PrefsHelper(context).masterEnabled) return
         val serviceIntent = Intent(context, RingerMonitorService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(serviceIntent)

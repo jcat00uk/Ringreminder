@@ -2,6 +2,8 @@ package com.jcat.ringreminder
 
 import android.app.Activity
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import com.android.billingclient.api.*
 
@@ -9,11 +11,21 @@ class BillingManager(private val context: Context) {
 
     companion object {
         const val PRODUCT_ID = "ring_reminder_pro"
+        private const val MAX_RECONNECT_ATTEMPTS = 3
     }
 
     private var billingClient: BillingClient? = null
+    private var reconnectAttempts = 0
+    private val handler = Handler(Looper.getMainLooper())
+    private var lastOnProStatus: ((Boolean) -> Unit)? = null
 
     fun start(onProStatus: (Boolean) -> Unit) {
+        lastOnProStatus = onProStatus
+        reconnectAttempts = 0
+        connect(onProStatus)
+    }
+
+    private fun connect(onProStatus: (Boolean) -> Unit) {
         val client = BillingClient.newBuilder(context)
             .setListener { result, purchases ->
                 if (result.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
@@ -28,11 +40,18 @@ class BillingManager(private val context: Context) {
 
         client.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
+                reconnectAttempts = 0
                 if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                     queryPurchases(onProStatus)
                 }
             }
-            override fun onBillingServiceDisconnected() {}
+            override fun onBillingServiceDisconnected() {
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    val delayMs = (1000L * (1 shl reconnectAttempts)).coerceAtMost(8000L)
+                    reconnectAttempts++
+                    handler.postDelayed({ connect(onProStatus) }, delayMs)
+                }
+            }
         })
     }
 
@@ -147,6 +166,7 @@ class BillingManager(private val context: Context) {
         }
 
     fun destroy() {
+        handler.removeCallbacksAndMessages(null)
         billingClient?.endConnection()
         billingClient = null
     }

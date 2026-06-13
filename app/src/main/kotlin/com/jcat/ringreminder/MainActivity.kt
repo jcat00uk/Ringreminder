@@ -1,5 +1,6 @@
 package com.jcat.ringreminder
 
+import android.app.AppOpsManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioManager
@@ -16,7 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var prefs: PrefsHelper
-    private var billingManager: BillingManager? = null
+    private val billingManager get() = (application as RingReminderApp).billingManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +29,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        billingManager = BillingManager(this).also { it.start {} }
+        billingManager.start {}
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -38,7 +39,9 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
         binding.btnReviewPermissions.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
+            startActivity(Intent(this, SettingsActivity::class.java).apply {
+                putExtra(SettingsActivity.EXTRA_SCROLL_TO, SettingsActivity.SCROLL_PERMISSIONS)
+            })
         }
         binding.btnRerunSetup.setOnClickListener {
             prefs.onboardingComplete = false
@@ -47,21 +50,23 @@ class MainActivity : AppCompatActivity() {
         }
         binding.btnStartService.setOnClickListener {
             startRingerService()
-            updateUI()
+            // Hide the banner immediately — service is starting, isRunning just hasn't been set yet
+            binding.serviceWarningBanner.visibility = View.GONE
         }
     }
 
     override fun onResume() {
         super.onResume()
         if (!prefs.onboardingComplete) return
-        billingManager?.refresh()
-        updateUI()
+        billingManager.refresh()
         checkPermissions()
+        // Post so the service has a chance to set isRunning before we read it
+        binding.root.post { updateUI() }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        billingManager?.destroy()
+        // BillingManager is app-scoped; no destroy here
     }
 
     private fun updateUI() {
@@ -113,6 +118,14 @@ class MainActivity : AppCompatActivity() {
                 issues.add("Notifications")
             }
         }
+        val notifListeners = Settings.Secure.getString(contentResolver, "enabled_notification_listeners") ?: ""
+        if (!notifListeners.contains(packageName)) issues.add("Notification access")
+        try {
+            val appOps = getSystemService(APP_OPS_SERVICE) as AppOpsManager
+            if (appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), packageName) != AppOpsManager.MODE_ALLOWED) {
+                issues.add("App usage access")
+            }
+        } catch (_: Exception) { issues.add("App usage access") }
         if (issues.isEmpty()) {
             binding.permissionWarningBanner.visibility = View.GONE
         } else {
@@ -121,12 +134,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startRingerService() {
-        val intent = Intent(this, RingerMonitorService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
-        } else {
-            startService(intent)
-        }
-    }
 }

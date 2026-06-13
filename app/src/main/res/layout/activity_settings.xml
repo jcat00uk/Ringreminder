@@ -180,8 +180,10 @@
                             </LinearLayout>
                             <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_trigger_low_volume" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                         </LinearLayout>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/threshold_label" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" />
-                        <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_threshold" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" app:singleSelection="true" app:selectionRequired="true" />
+                        <LinearLayout android:id="@+id/layout_threshold" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/threshold_label" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_threshold" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" app:singleSelection="true" app:selectionRequired="true" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
@@ -295,22 +297,39 @@
                             </LinearLayout>
                             <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/switch_fix_volume" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                         </LinearLayout>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/restore_level_label" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" />
-                        <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_restore" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" app:singleSelection="true" app:selectionRequired="true" />
+                        <LinearLayout android:id="@+id/layout_restore_level" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/restore_level_label" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_restore" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" app:singleSelection="true" app:selectionRequired="true" />
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <!-- ── Permissions ── -->
-            <TextView
+            <LinearLayout
+                android:id="@+id/layout_permissions_header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:paddingStart="4dp"
-                android:text="@string/section_permissions"
-                android:textSize="11sp"
-                android:textAllCaps="true"
-                android:textColor="?attr/colorPrimary" />
+                android:paddingEnd="4dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/section_permissions"
+                    android:textSize="11sp"
+                    android:textAllCaps="true"
+                    android:textColor="?attr/colorPrimary" />
+                <ImageView
+                    android:id="@+id/img_permissions_chevron"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_chevron_down"
+                    app:tint="?attr/colorPrimary" />
+            </LinearLayout>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -320,75 +339,112 @@
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
 
-                    <!-- Post notifications (Android 13+) -->
-                    <LinearLayout android:id="@+id/layout_post_notifications_perm" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_post_notifications" android:textSize="15sp" />
-                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/perm_post_notifications_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
-                            <TextView android:id="@+id/status_post_notifications" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                    <LinearLayout
+                        android:id="@+id/layout_permissions_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Post notifications (Android 13+) -->
+                        <LinearLayout android:id="@+id/layout_post_notifications_perm" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_post_notifications" android:textSize="15sp" />
+                                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/perm_post_notifications_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
+                                <TextView android:id="@+id/status_post_notifications" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+                            <Button android:id="@+id/btn_fix_post_notifications" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
                         </LinearLayout>
-                        <Button android:id="@+id/btn_fix_post_notifications" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
+
+                        <View android:id="@+id/divider_post_notifications" android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                        <!-- Overlay -->
+                        <LinearLayout android:id="@+id/layout_perm_overlay" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_overlay" android:textSize="15sp" />
+                                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboard_overlay_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
+                                <TextView android:id="@+id/status_overlay" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+                            <Button android:id="@+id/btn_fix_overlay" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
+                        </LinearLayout>
+
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                        <!-- DND access -->
+                        <LinearLayout android:id="@+id/layout_perm_dnd" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_dnd" android:textSize="15sp" />
+                                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboard_dnd_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
+                                <TextView android:id="@+id/status_dnd" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+                            <Button android:id="@+id/btn_fix_dnd_perm" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
+                        </LinearLayout>
+
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                        <!-- Battery optimisation -->
+                        <LinearLayout android:id="@+id/layout_perm_battery" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_battery" android:textSize="15sp" />
+                                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboard_battery_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
+                                <TextView android:id="@+id/status_battery" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+                            <Button android:id="@+id/btn_fix_battery" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
+                        </LinearLayout>
+
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                        <!-- Notification listener (for pulse feature) -->
+                        <LinearLayout android:id="@+id/layout_perm_notification_listener" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_notification_listener" android:textSize="15sp" />
+                                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/perm_notification_listener_reason" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
+                                <TextView android:id="@+id/status_notification_listener" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+                            <Button android:id="@+id/btn_fix_notification_listener" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
+                        </LinearLayout>
+
+                        <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
+
+                        <!-- Usage stats (for per-app suppression) -->
+                        <LinearLayout android:id="@+id/layout_perm_usage_stats" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_usage_stats" android:textSize="15sp" />
+                                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/perm_usage_stats_reason" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
+                                <TextView android:id="@+id/status_usage_stats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+                            <Button android:id="@+id/btn_fix_usage_stats" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
+                        </LinearLayout>
+
+                        <!-- Exact alarm (Android 12+, for auto-fix scheduling) -->
+                        <View android:id="@+id/divider_exact_alarm" android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" android:visibility="gone" />
+                        <LinearLayout android:id="@+id/layout_perm_exact_alarm" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical" android:visibility="gone">
+                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_exact_alarm" android:textSize="15sp" />
+                                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/perm_exact_alarm_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
+                                <TextView android:id="@+id/status_exact_alarm" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
+                            </LinearLayout>
+                            <Button android:id="@+id/btn_fix_exact_alarm" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
+                        </LinearLayout>
+
                     </LinearLayout>
 
-                    <View android:id="@+id/divider_post_notifications" android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
-
-                    <!-- Overlay -->
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_overlay" android:textSize="15sp" />
-                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboard_overlay_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
-                            <TextView android:id="@+id/status_overlay" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
-                        </LinearLayout>
-                        <Button android:id="@+id/btn_fix_overlay" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
+                    <!-- Collapsed summary row (shown when permissions content is hidden) -->
+                    <LinearLayout
+                        android:id="@+id/layout_permissions_summary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical"
+                        android:visibility="gone">
+                        <TextView
+                            android:id="@+id/txt_permissions_summary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="13sp"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
-
-                    <!-- DND access -->
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_dnd" android:textSize="15sp" />
-                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboard_dnd_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
-                            <TextView android:id="@+id/status_dnd" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
-                        </LinearLayout>
-                        <Button android:id="@+id/btn_fix_dnd_perm" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
-                    </LinearLayout>
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
-
-                    <!-- Battery optimisation -->
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_battery" android:textSize="15sp" />
-                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/onboard_battery_desc" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
-                            <TextView android:id="@+id/status_battery" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
-                        </LinearLayout>
-                        <Button android:id="@+id/btn_fix_battery" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
-                    </LinearLayout>
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
-
-                    <!-- Notification listener (for pulse feature) -->
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_notification_listener" android:textSize="15sp" />
-                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/perm_notification_listener_reason" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
-                            <TextView android:id="@+id/status_notification_listener" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
-                        </LinearLayout>
-                        <Button android:id="@+id/btn_fix_notification_listener" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
-                    </LinearLayout>
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginStart="16dp" android:background="?attr/colorOutlineVariant" />
-
-                    <!-- Usage stats (for per-app suppression) -->
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/perm_usage_stats" android:textSize="15sp" />
-                            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/perm_usage_stats_reason" android:textSize="12sp" android:textColor="?attr/colorOnSurfaceVariant" android:layout_marginTop="2dp" android:layout_marginBottom="2dp" />
-                            <TextView android:id="@+id/status_usage_stats" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="?attr/colorOnSurfaceVariant" />
-                        </LinearLayout>
-                        <Button android:id="@+id/btn_fix_usage_stats" style="@style/Widget.Material3.Button.TextButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/fix" android:visibility="gone" />
-                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -525,6 +581,34 @@
                         <com.google.android.material.chip.ChipGroup android:id="@+id/chip_group_panel_mode" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" app:singleSelection="true" app:selectionRequired="true" />
                     </LinearLayout>
 
+                    <!-- Verify purchase row — shown only when hasPurchasedPro=true -->
+                    <LinearLayout
+                        android:id="@+id/layout_verify_purchase"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="8dp"
+                        android:paddingTop="4dp"
+                        android:paddingBottom="4dp"
+                        android:gravity="center_vertical"
+                        android:visibility="gone">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/verify_purchase_label"
+                            android:textSize="13sp"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                        <Button
+                            android:id="@+id/btn_verify_purchase"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/verify_purchase"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
                     <View
                         android:id="@+id/divider_pro_upgrade"
                         android:layout_width="match_parent"
@@ -584,7 +668,9 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- Header row with collapse toggle -->
                     <LinearLayout
+                        android:id="@+id/layout_dev_header"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
@@ -610,33 +696,83 @@
                             android:paddingEnd="6dp"
                             android:paddingTop="2dp"
                             android:paddingBottom="2dp" />
+                        <ImageView
+                            android:id="@+id/img_dev_chevron"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/ic_chevron_down"
+                            app:tint="#FFFF5722" />
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/txt_dev_info"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textSize="12sp"
-                        android:fontFamily="monospace"
-                        android:lineSpacingExtra="4dp" />
-
+                    <!-- Collapsible info + buttons -->
                     <LinearLayout
+                        android:id="@+id/layout_dev_content"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="12dp">
-                        <Button
-                            android:id="@+id/btn_dev_expire_trial"
-                            style="@style/Widget.Material3.Button.TextButton"
-                            android:layout_width="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/txt_dev_info"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Expire Trial" />
-                        <Button
-                            android:id="@+id/btn_dev_refresh"
-                            style="@style/Widget.Material3.Button.TextButton"
-                            android:layout_width="wrap_content"
+                            android:textSize="12sp"
+                            android:fontFamily="monospace"
+                            android:lineSpacingExtra="4dp" />
+
+                        <!-- Buttons: two rows to fit portrait -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Refresh" />
+                            android:orientation="horizontal"
+                            android:layout_marginTop="12dp">
+                            <Button
+                                android:id="@+id/btn_dev_expire_trial"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Expire Trial" />
+                            <Button
+                                android:id="@+id/btn_dev_toggle_purchased"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Toggle Pro" />
+                            <Button
+                                android:id="@+id/btn_dev_simulate_non_pro"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Sim Non-Pro" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+                            <Button
+                                android:id="@+id/btn_dev_refresh"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Refresh" />
+                            <Button
+                                android:id="@+id/btn_dev_disable"
+                                style="@style/Widget.Material3.Button.TextButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Disable Dev" />
+                            <!-- spacer to balance the row -->
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:layout_weight="1" />
+                        </LinearLayout>
+
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

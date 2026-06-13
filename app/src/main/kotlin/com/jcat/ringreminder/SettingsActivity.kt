@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.text.format.DateFormat
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
@@ -34,16 +35,17 @@ class SettingsActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_SCROLL_TO = "scroll_to"
         const val SCROLL_AUTO_FIX = "auto_fix"
+        const val SCROLL_PERMISSIONS = "permissions"
         private const val DEV_KEY_HASH = "b2280f06c2a7401da8dc71f858c1d513d491c0b3ad80823f6e8cb8d2de7fc3ea"
     }
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var prefs: PrefsHelper
-    private var billingManager: BillingManager? = null
+    private val billingManager get() = (application as RingReminderApp).billingManager
     private var devTapCount = 0
     private var lastDevTapTime = 0L
-    private var secondTapCount = 0
-    private var lastSecondTapTime = 0L
+    private var settingsChanged = false
+    private var firstPermissionsLoad = true
 
     private val settingsLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -57,9 +59,7 @@ class SettingsActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         prefs = PrefsHelper(this)
-        billingManager = BillingManager(this).also { bm ->
-            bm.start { runOnUiThread { setupProFeatures() } }
-        }
+        billingManager.start { runOnUiThread { setupProFeatures() } }
         setupMasterToggle()
         setupWidgetButton()
         setupTriggers()
@@ -69,16 +69,19 @@ class SettingsActivity : AppCompatActivity() {
         setupDevMode()
         updatePermissionsSection()
 
-        if (intent.getStringExtra(EXTRA_SCROLL_TO) == SCROLL_AUTO_FIX) {
-            binding.switchAutoFixEnabled.post {
+        when (intent.getStringExtra(EXTRA_SCROLL_TO)) {
+            SCROLL_AUTO_FIX -> binding.switchAutoFixEnabled.post {
                 binding.nestedScrollView.smoothScrollTo(0, binding.switchAutoFixEnabled.top)
+            }
+            SCROLL_PERMISSIONS -> binding.layoutPermissionsHeader.post {
+                binding.nestedScrollView.smoothScrollTo(0, binding.layoutPermissionsHeader.top)
             }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        billingManager?.destroy()
+        // BillingManager is app-scoped; no destroy here
     }
 
     override fun onResume() {
@@ -88,7 +91,10 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        notifyService()
+        if (settingsChanged) {
+            notifyService()
+            settingsChanged = false
+        }
     }
 
     private fun notifyService() {
@@ -97,6 +103,10 @@ class SettingsActivity : AppCompatActivity() {
                 action = RingerMonitorService.ACTION_REFRESH
             })
         }
+    }
+
+    private fun markChanged() {
+        settingsChanged = true
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -143,7 +153,11 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchTriggerDnd.setOnCheckedChangeListener { _, v -> prefs.triggerDnd = v; notifyService() }
 
         binding.switchTriggerLowVolume.isChecked = prefs.triggerLowVolume
-        binding.switchTriggerLowVolume.setOnCheckedChangeListener { _, v -> prefs.triggerLowVolume = v; notifyService() }
+        binding.switchTriggerLowVolume.setOnCheckedChangeListener { _, v ->
+            prefs.triggerLowVolume = v
+            refreshVolumeThresholdState()
+            notifyService()
+        }
 
         listOf(20, 30, 40, 50).forEach { pct ->
             binding.chipGroupThreshold.addView(Chip(this).apply {
@@ -153,6 +167,7 @@ class SettingsActivity : AppCompatActivity() {
                 setOnClickListener { prefs.thresholdVolumePercent = pct; notifyService() }
             })
         }
+        refreshVolumeThresholdState()
 
         binding.switchShowAllConditions.isChecked = prefs.showAllConditions
         binding.switchShowAllConditions.setOnCheckedChangeListener { _, v -> prefs.showAllConditions = v; notifyService() }
@@ -185,6 +200,14 @@ class SettingsActivity : AppCompatActivity() {
         binding.layoutNudgeInterval.alpha = if (prefs.nudgeEnabled) 1f else 0.4f
     }
 
+    private fun refreshVolumeThresholdState() {
+        binding.layoutThreshold.alpha = if (prefs.triggerLowVolume) 1f else 0.4f
+    }
+
+    private fun refreshRestoreVolumeState() {
+        binding.layoutRestoreLevel.alpha = if (prefs.fixRestoreVolume) 1f else 0.4f
+    }
+
     private fun setupFixActions() {
         binding.switchFixUnmute.isChecked = prefs.fixUnmute
         binding.switchFixUnmute.setOnCheckedChangeListener { _, v -> prefs.fixUnmute = v }
@@ -193,7 +216,10 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchFixDnd.setOnCheckedChangeListener { _, v -> prefs.fixDisableDnd = v }
 
         binding.switchFixVolume.isChecked = prefs.fixRestoreVolume
-        binding.switchFixVolume.setOnCheckedChangeListener { _, v -> prefs.fixRestoreVolume = v }
+        binding.switchFixVolume.setOnCheckedChangeListener { _, v ->
+            prefs.fixRestoreVolume = v
+            refreshRestoreVolumeState()
+        }
 
         listOf(40, 50, 60, 75).forEach { pct ->
             binding.chipGroupRestore.addView(Chip(this).apply {
@@ -203,6 +229,7 @@ class SettingsActivity : AppCompatActivity() {
                 setOnClickListener { prefs.restoreVolumePercent = pct }
             })
         }
+        refreshRestoreVolumeState()
     }
 
     private fun setupProFeatures() {
@@ -225,14 +252,14 @@ class SettingsActivity : AppCompatActivity() {
             TimePickerDialog(this, { _, h, m ->
                 prefs.scheduleStartHour = h; prefs.scheduleStartMinute = m
                 updateScheduleTimeLabels(); notifyService()
-            }, prefs.scheduleStartHour, prefs.scheduleStartMinute, true).show()
+            }, prefs.scheduleStartHour, prefs.scheduleStartMinute, DateFormat.is24HourFormat(this)).show()
         }
         binding.btnScheduleTo.setOnClickListener {
             if (!prefs.isPro) return@setOnClickListener
             TimePickerDialog(this, { _, h, m ->
                 prefs.scheduleEndHour = h; prefs.scheduleEndMinute = m
                 updateScheduleTimeLabels(); notifyService()
-            }, prefs.scheduleEndHour, prefs.scheduleEndMinute, true).show()
+            }, prefs.scheduleEndHour, prefs.scheduleEndMinute, DateFormat.is24HourFormat(this)).show()
         }
 
         // ── Auto-unmute: overlay quick-fix toggle (Pro) ──
@@ -266,7 +293,7 @@ class SettingsActivity : AppCompatActivity() {
                 prefs.autoFixRecurringMinute = min
                 updateAutoFixTimeLabel()
                 notifyService()
-            }, h, m, true).show()
+            }, h, m, DateFormat.is24HourFormat(this)).show()
         }
 
         // ── Per-app suppression (Pro) ──
@@ -360,6 +387,20 @@ class SettingsActivity : AppCompatActivity() {
             })
         }
 
+        // Verify purchase row — visible only when already purchased (and dev mode not active)
+        val verifyVisible = if (prefs.hasPurchasedPro && !prefs.devModeActive) View.VISIBLE else View.GONE
+        binding.layoutVerifyPurchase.visibility = verifyVisible
+        binding.btnVerifyPurchase.setOnClickListener {
+            billingManager.restorePurchases { restored ->
+                runOnUiThread {
+                    val msg = if (restored) getString(R.string.verify_purchase_ok)
+                              else getString(R.string.restore_pro_not_found)
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                    if (!restored) setupProFeatures()
+                }
+            }
+        }
+
         // Pro upgrade row — visible whenever not purchased and dev mode not active
         val upgradeVisible = if (!prefs.hasPurchasedPro && !prefs.devModeActive) View.VISIBLE else View.GONE
         binding.dividerProUpgrade.visibility = upgradeVisible
@@ -373,7 +414,7 @@ class SettingsActivity : AppCompatActivity() {
             else -> getString(R.string.trial_expired)
         }
         binding.btnRestorePro.setOnClickListener {
-            billingManager?.restorePurchases { restored ->
+            billingManager.restorePurchases { restored ->
                 runOnUiThread {
                     val msg = if (restored) getString(R.string.restore_pro_success)
                               else getString(R.string.restore_pro_not_found)
@@ -383,13 +424,18 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
         binding.btnUpgradePro.setOnClickListener {
-            billingManager?.launchPurchaseFlow(this) { runOnUiThread { setupProFeatures() } }
+            billingManager.launchPurchaseFlow(this) { runOnUiThread { setupProFeatures() } }
         }
     }
 
+    private fun formatTime(hour: Int, minute: Int): String {
+        val cal = java.util.Calendar.getInstance().apply { set(java.util.Calendar.HOUR_OF_DAY, hour); set(java.util.Calendar.MINUTE, minute) }
+        return DateFormat.getTimeFormat(this).format(cal.time)
+    }
+
     private fun updateScheduleTimeLabels() {
-        binding.btnScheduleFrom.text = String.format("%02d:%02d", prefs.scheduleStartHour, prefs.scheduleStartMinute)
-        binding.btnScheduleTo.text = String.format("%02d:%02d", prefs.scheduleEndHour, prefs.scheduleEndMinute)
+        binding.btnScheduleFrom.text = formatTime(prefs.scheduleStartHour, prefs.scheduleStartMinute)
+        binding.btnScheduleTo.text = formatTime(prefs.scheduleEndHour, prefs.scheduleEndMinute)
     }
 
     private fun refreshScheduleTimesState() {
@@ -401,7 +447,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun updateAutoFixTimeLabel() {
         binding.btnAutoFixTime.text = if (prefs.autoFixRecurringHour >= 0) {
-            String.format("%02d:%02d", prefs.autoFixRecurringHour, prefs.autoFixRecurringMinute)
+            formatTime(prefs.autoFixRecurringHour, prefs.autoFixRecurringMinute)
         } else {
             getString(R.string.auto_fix_not_set)
         }
@@ -459,14 +505,19 @@ class SettingsActivity : AppCompatActivity() {
             .show()
     }
 
+    private var permissionsExpanded get() = prefs.uiPermissionsExpanded; set(v) { prefs.uiPermissionsExpanded = v }
+
     private fun updatePermissionsSection() {
         // POST_NOTIFICATIONS (Android 13+ only)
+        var hasPostNotif: Boolean? = null
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val hasPostNotif = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            hasPostNotif = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
             binding.layoutPostNotificationsPerm.visibility = View.VISIBLE
             binding.dividerPostNotifications.visibility = View.VISIBLE
             binding.statusPostNotifications.text = if (hasPostNotif) getString(R.string.granted) else getString(R.string.not_granted)
             binding.btnFixPostNotifications.visibility = if (!hasPostNotif) View.VISIBLE else View.GONE
+            binding.layoutPostNotificationsPerm.setBackgroundColor(
+                if (!hasPostNotif) 0x18FF0000 else android.graphics.Color.TRANSPARENT)
             binding.btnFixPostNotifications.setOnClickListener {
                 settingsLauncher.launch(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                     putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
@@ -496,6 +547,28 @@ class SettingsActivity : AppCompatActivity() {
         binding.btnFixBattery.visibility = if (!hasBattery) View.VISIBLE else View.GONE
         binding.btnFixNotificationListener.visibility = if (!hasNotifListener) View.VISIBLE else View.GONE
         binding.btnFixUsageStats.visibility = if (!hasUsageStats) View.VISIBLE else View.GONE
+
+        // Red tint on rows that need fixing
+        val redTint = 0x18FF0000
+        binding.layoutPermOverlay.setBackgroundColor(if (!hasOverlay) redTint else android.graphics.Color.TRANSPARENT)
+        binding.layoutPermDnd.setBackgroundColor(if (!hasDnd) redTint else android.graphics.Color.TRANSPARENT)
+        binding.layoutPermBattery.setBackgroundColor(if (!hasBattery) redTint else android.graphics.Color.TRANSPARENT)
+        binding.layoutPermNotificationListener.setBackgroundColor(if (!hasNotifListener) redTint else android.graphics.Color.TRANSPARENT)
+        binding.layoutPermUsageStats.setBackgroundColor(if (!hasUsageStats) redTint else android.graphics.Color.TRANSPARENT)
+
+        // Exact alarm (Android 12+ only)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(android.app.AlarmManager::class.java)
+            val hasExactAlarm = alarmManager.canScheduleExactAlarms()
+            binding.dividerExactAlarm.visibility = View.VISIBLE
+            binding.layoutPermExactAlarm.visibility = View.VISIBLE
+            binding.statusExactAlarm.text = if (hasExactAlarm) getString(R.string.granted) else getString(R.string.not_granted)
+            binding.btnFixExactAlarm.visibility = if (!hasExactAlarm) View.VISIBLE else View.GONE
+            binding.layoutPermExactAlarm.setBackgroundColor(if (!hasExactAlarm) redTint else android.graphics.Color.TRANSPARENT)
+            binding.btnFixExactAlarm.setOnClickListener {
+                settingsLauncher.launch(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName")))
+            }
+        }
 
         binding.btnFixOverlay.setOnClickListener {
             settingsLauncher.launch(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
@@ -528,60 +601,80 @@ class SettingsActivity : AppCompatActivity() {
                 .setNegativeButton("Cancel", null)
                 .show()
         }
+
+        // Build granted map for collapse logic (exclude post-notif row on older Android)
+        permGranted = buildMap {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && hasPostNotif != null)
+                put(binding.layoutPostNotificationsPerm, hasPostNotif)
+            put(binding.layoutPermOverlay, hasOverlay)
+            put(binding.layoutPermDnd, hasDnd)
+            put(binding.layoutPermBattery, hasBattery)
+            put(binding.layoutPermNotificationListener, hasNotifListener)
+            put(binding.layoutPermUsageStats, hasUsageStats)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val alarmManager = getSystemService(android.app.AlarmManager::class.java)
+                put(binding.layoutPermExactAlarm, alarmManager.canScheduleExactAlarms())
+            }
+        }
+
+        // Auto-collapse on first load when all granted; never override a manual expand/collapse
+        val allGranted = permGranted.values.all { it }
+        if (firstPermissionsLoad) {
+            firstPermissionsLoad = false
+            if (allGranted) permissionsExpanded = false
+        }
+
+        val ungrantedCount = permGranted.values.count { !it }
+        binding.txtPermissionsSummary.text = if (allGranted)
+            getString(R.string.permissions_all_granted)
+        else
+            "$ungrantedCount permission${if (ungrantedCount == 1) "" else "s"} need attention"
+
+        applyPermissionsExpanded()
+
+        binding.layoutPermissionsHeader.setOnClickListener {
+            permissionsExpanded = !permissionsExpanded
+            applyPermissionsExpanded()
+        }
+    }
+
+    private var permGranted = mapOf<android.view.View, Boolean>()
+    private var devInfoExpanded get() = prefs.uiDevInfoExpanded; set(v) { prefs.uiDevInfoExpanded = v }
+
+    private fun applyPermissionsExpanded() {
+        binding.imgPermissionsChevron.rotation = if (permissionsExpanded) 0f else -90f
+        binding.layoutPermissionsSummary.visibility = if (permissionsExpanded) View.GONE else View.VISIBLE
+
+        if (permissionsExpanded) {
+            // Show everything
+            binding.layoutPermissionsContent.visibility = View.VISIBLE
+            permGranted.keys.forEach { it.visibility = View.VISIBLE }
+        } else {
+            // Show only ungranted rows; hide granted ones
+            binding.layoutPermissionsContent.visibility = View.VISIBLE
+            permGranted.forEach { (row, granted) ->
+                row.visibility = if (granted) View.GONE else View.VISIBLE
+            }
+        }
     }
 
     private fun setupDevMode() {
         if (prefs.devModeEnabled) refreshDevPanel()
 
-        binding.txtSectionPro.setOnClickListener {
-            val now = System.currentTimeMillis()
-            if (now - lastDevTapTime > 4000L) devTapCount = 0
-            lastDevTapTime = now
-            devTapCount++
-            if (devTapCount >= 7) {
-                devTapCount = 0
-                lastSecondTapTime = now
-                secondTapCount = 0
-                // Register second-element listener to complete the sequence
-                binding.layoutProUpgrade.setOnClickListener secondTap@{
-                    val now2 = System.currentTimeMillis()
-                    if (now2 - lastSecondTapTime > 4000L) {
-                        secondTapCount = 0
-                        binding.layoutProUpgrade.setOnClickListener(null)
-                        return@secondTap
-                    }
-                    lastSecondTapTime = now2
-                    secondTapCount++
-                    if (secondTapCount >= 2) {
-                        secondTapCount = 0
-                        binding.layoutProUpgrade.setOnClickListener(null)
+        binding.txtSectionPro.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_UP -> {
+                    val now = System.currentTimeMillis()
+                    if (now - lastDevTapTime > 4000L) devTapCount = 0
+                    lastDevTapTime = now
+                    devTapCount++
+                    if (devTapCount >= 7) {
+                        devTapCount = 0
                         showDevKeyDialog()
                     }
                 }
             }
-        }
-
-        var deactivateRunnable: Runnable? = null
-        binding.txtSectionPro.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    deactivateRunnable = Runnable {
-                        if (prefs.devModeActive) {
-                            prefs.devModeActive = false
-                            prefs.devModeEnabled = false
-                            binding.devPanelCard.visibility = View.GONE
-                            Toast.makeText(this, "Developer mode disabled", Toast.LENGTH_SHORT).show()
-                            setupProFeatures()
-                        }
-                    }
-                    binding.txtSectionPro.postDelayed(deactivateRunnable, 5000L)
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    binding.txtSectionPro.removeCallbacks(deactivateRunnable)
-                    deactivateRunnable = null
-                }
-            }
-            false  // let click events still pass through to the tap counter
+            true
         }
     }
 
@@ -624,6 +717,16 @@ class SettingsActivity : AppCompatActivity() {
             return
         }
         binding.devPanelCard.visibility = View.VISIBLE
+
+        fun applyDevExpanded() {
+            binding.layoutDevContent.visibility = if (devInfoExpanded) View.VISIBLE else View.GONE
+            binding.imgDevChevron.rotation = if (devInfoExpanded) 0f else -90f
+        }
+        applyDevExpanded()
+        binding.layoutDevHeader.setOnClickListener {
+            devInfoExpanded = !devInfoExpanded
+            applyDevExpanded()
+        }
 
         val sdf = java.text.SimpleDateFormat("dd MMM yyyy HH:mm", java.util.Locale.getDefault())
         val now = System.currentTimeMillis()
@@ -681,12 +784,13 @@ class SettingsActivity : AppCompatActivity() {
             appendLine("── Pro Status ──────────────────")
             appendLine("isPro:           ${prefs.isPro}")
             appendLine("devModeActive:   ${prefs.devModeActive}")
+            appendLine("simulateNonPro:  ${prefs.devSimulateNonPro}")
             appendLine("hasPurchasedPro: ${prefs.hasPurchasedPro}")
             appendLine("isInTrial:       ${prefs.isInTrial}")
             appendLine("Trial started:   ${sdf.format(java.util.Date(prefs.trialStartMs))}")
             appendLine("Trial expires:   ${sdf.format(trialExpiry)}")
             appendLine("Days remaining:  ${prefs.trialDaysRemaining}")
-            appendLine("Billing client:  ${billingManager?.status ?: "null"}")
+            appendLine("Billing client:  ${billingManager.status}")
             appendLine()
             appendLine("── Service ─────────────────────")
             appendLine("Running:         ${RingerMonitorService.isRunning}")
@@ -723,6 +827,31 @@ class SettingsActivity : AppCompatActivity() {
             setupProFeatures()
             refreshDevPanel()
         }
+        binding.btnDevTogglePurchased.setOnClickListener {
+            prefs.hasPurchasedPro = !prefs.hasPurchasedPro
+            val msg = if (prefs.hasPurchasedPro) "hasPurchasedPro = true" else "hasPurchasedPro = false"
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            notifyService()
+            setupProFeatures()
+            refreshDevPanel()
+        }
+        binding.btnDevSimulateNonPro.setOnClickListener {
+            prefs.devSimulateNonPro = !prefs.devSimulateNonPro
+            val msg = if (prefs.devSimulateNonPro) "Simulating non-Pro (debug override off)" else "Debug Pro override restored"
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            notifyService()
+            setupProFeatures()
+            refreshDevPanel()
+        }
+        binding.btnDevDisable.setOnClickListener {
+            prefs.devModeActive = false
+            prefs.devModeEnabled = false
+            prefs.devSimulateNonPro = false
+            binding.devPanelCard.visibility = View.GONE
+            Toast.makeText(this, "Developer mode disabled", Toast.LENGTH_SHORT).show()
+            notifyService()
+            setupProFeatures()
+        }
         var resetRunnable: Runnable? = null
         binding.btnDevRefresh.setOnClickListener { refreshDevPanel() }
         binding.btnDevRefresh.setOnTouchListener { v, event ->
@@ -747,9 +876,4 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun startRingerService() {
-        val intent = Intent(this, RingerMonitorService::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(intent)
-        else startService(intent)
-    }
 }

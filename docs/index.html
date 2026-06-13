@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ring Reminder — Never miss a call because your phone was silent</title>
+    <meta name="description" content="Ring Reminder monitors your Android phone's ringer state and alerts you when it's muted, on Do Not Disturb, or too quiet to hear incoming calls.">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --blue:        #1976D2;
+            --blue-dark:   #1565C0;
+            --blue-light:  #E3F2FD;
+            --blue-mid:    #42A5F5;
+            --green:       #4CAF50;
+            --orange:      #FF9800;
+            --text:        #1a1a1a;
+            --text-muted:  #555;
+            --bg:          #ffffff;
+            --bg-alt:      #F5F9FF;
+            --radius:      14px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.6;
+        }
+
+        /* ── Nav ── */
+        nav {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--blue-dark);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; height: 56px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.25);
+        }
+        .nav-brand {
+            display: flex; align-items: center; gap: 10px;
+            color: #fff; font-size: 17px; font-weight: 600; text-decoration: none;
+        }
+        .nav-icon {
+            width: 32px; height: 32px; background: var(--blue-mid);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+        }
+        .nav-icon svg { width: 20px; height: 20px; fill: #fff; }
+        .nav-cta {
+            background: #fff; color: var(--blue-dark);
+            padding: 8px 18px; border-radius: 20px;
+            font-size: 14px; font-weight: 700; text-decoration: none;
+            transition: opacity .15s;
+        }
+        .nav-cta:hover { opacity: .85; }
+
+        /* ── Hero ── */
+        .hero {
+            background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 60%, var(--blue-mid) 100%);
+            color: #fff;
+            padding: 80px 24px 90px;
+            text-align: center;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255,255,255,.15);
+            border: 1px solid rgba(255,255,255,.3);
+            border-radius: 20px; padding: 5px 14px;
+            font-size: 13px; font-weight: 600;
+            letter-spacing: .04em; text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 52px);
+            font-weight: 800; line-height: 1.15;
+            max-width: 720px; margin: 0 auto 20px;
+        }
+        .hero h1 span { color: #90CAF9; }
+        .hero p {
+            font-size: clamp(16px, 2vw, 20px);
+            opacity: .88; max-width: 560px; margin: 0 auto 36px;
+        }
+        .hero-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+        .btn-primary {
+            background: #fff; color: var(--blue-dark);
+            padding: 14px 28px; border-radius: 28px;
+            font-size: 15px; font-weight: 700; text-decoration: none;
+            box-shadow: 0 4px 16px rgba(0,0,0,.2);
+            transition: transform .15s, box-shadow .15s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.28); }
+        .btn-secondary {
+            border: 2px solid rgba(255,255,255,.7); color: #fff;
+            padding: 13px 26px; border-radius: 28px;
+            font-size: 15px; font-weight: 600; text-decoration: none;
+            transition: background .15s;
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,.12); }
+
+        /* ── Section wrapper ── */
+        .section { padding: 72px 24px; }
+        .section-alt { background: var(--bg-alt); }
+        .container { max-width: 960px; margin: 0 auto; }
+        .section-label {
+            font-size: 11px; font-weight: 700; letter-spacing: .1em;
+            text-transform: uppercase; color: var(--blue); margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: clamp(22px, 3.5vw, 34px); font-weight: 800;
+            margin-bottom: 14px; line-height: 1.2;
+        }
+        .section-sub {
+            font-size: 16px; color: var(--text-muted);
+            max-width: 600px; margin-bottom: 48px;
+        }
+
+        /* ── How it works ── */
+        .steps { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+        .step {
+            background: #fff; border-radius: var(--radius);
+            padding: 28px 24px;
+            box-shadow: 0 2px 12px rgba(25,118,210,.08);
+            border-top: 3px solid var(--blue);
+        }
+        .step-num {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--blue); color: #fff;
+            font-weight: 800; font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 14px;
+        }
+        .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .step p { font-size: 14px; color: var(--text-muted); line-height: 1.55; }
+
+        /* ── Features grid ── */
+        .features { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+        .feature {
+            background: #fff; border-radius: var(--radius);
+            padding: 26px 22px;
+            box-shadow: 0 2px 12px rgba(25,118,210,.07);
+        }
+        .feature-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: var(--blue-light); display: flex; align-items: center;
+            justify-content: center; margin-bottom: 14px;
+        }
+        .feature-icon svg { width: 24px; height: 24px; fill: var(--blue); }
+        .feature h3 { font-size: 15px; font-weight: 700; margin-bottom: 7px; }
+        .feature p { font-size: 14px; color: var(--text-muted); line-height: 1.55; }
+
+        /* ── Pro comparison ── */
+        .plans { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+        .plan {
+            border-radius: var(--radius); padding: 32px 28px;
+            border: 2px solid #E3EAF5;
+        }
+        .plan-pro {
+            background: var(--blue); color: #fff;
+            border-color: var(--blue);
+            box-shadow: 0 8px 32px rgba(25,118,210,.35);
+        }
+        .plan-label {
+            font-size: 11px; font-weight: 700; letter-spacing: .1em;
+            text-transform: uppercase; margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+        .plan-pro .plan-label { color: rgba(255,255,255,.7); }
+        .plan h3 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+        .plan-price { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+        .plan-pro .plan-price { color: rgba(255,255,255,.75); }
+        .plan ul { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+        .plan ul li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.4; }
+        .plan ul li::before {
+            content: "✓"; font-weight: 800; flex-shrink: 0;
+            color: var(--green); margin-top: 1px;
+        }
+        .plan-pro ul li::before { color: #A5D6A7; }
+        .plan-cta {
+            display: block; text-align: center; margin-top: 28px;
+            padding: 13px; border-radius: 24px; font-weight: 700; font-size: 15px;
+            text-decoration: none; transition: opacity .15s;
+        }
+        .plan-cta:hover { opacity: .85; }
+        .plan-cta-free { background: var(--blue-light); color: var(--blue); }
+        .plan-cta-pro { background: #fff; color: var(--blue-dark); }
+
+        /* ── Trial banner ── */
+        .trial-banner {
+            background: linear-gradient(90deg, #FFF8E1, #FFF3CD);
+            border: 1px solid #FFE082; border-radius: var(--radius);
+            padding: 18px 24px; display: flex; align-items: center;
+            gap: 14px; margin-top: 32px; flex-wrap: wrap;
+        }
+        .trial-banner span { font-size: 22px; }
+        .trial-banner p { flex: 1; font-size: 15px; color: #6D4C00; }
+        .trial-banner p strong { font-weight: 700; }
+
+        /* ── Permissions ── */
+        .perms { display: grid; gap: 14px; }
+        .perm {
+            display: flex; align-items: flex-start; gap: 16px;
+            background: #fff; border-radius: 10px; padding: 18px 20px;
+            box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        }
+        .perm-icon {
+            width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+            background: var(--blue-light); display: flex;
+            align-items: center; justify-content: center;
+        }
+        .perm-icon svg { width: 20px; height: 20px; fill: var(--blue); }
+        .perm h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .perm p { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+        /* ── FAQ ── */
+        .faqs { display: flex; flex-direction: column; gap: 16px; max-width: 720px; }
+        details {
+            background: #fff; border-radius: var(--radius);
+            box-shadow: 0 1px 8px rgba(0,0,0,.07);
+            overflow: hidden;
+        }
+        summary {
+            padding: 18px 22px; font-size: 15px; font-weight: 600;
+            cursor: pointer; list-style: none;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::after {
+            content: "+"; font-size: 20px; font-weight: 300;
+            color: var(--blue); transition: transform .2s;
+        }
+        details[open] summary::after { transform: rotate(45deg); }
+        .faq-body { padding: 0 22px 18px; font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+
+        /* ── Footer ── */
+        footer {
+            background: var(--blue-dark); color: rgba(255,255,255,.75);
+            padding: 40px 24px; text-align: center;
+        }
+        footer .footer-brand { color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+        footer a { color: #90CAF9; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        footer .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin: 14px 0; font-size: 14px; }
+        footer p { font-size: 13px; margin-top: 16px; opacity: .6; }
+
+        /* ── Play Store badge ── */
+        .play-badge {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: #000; color: #fff; border-radius: 10px;
+            padding: 10px 18px; text-decoration: none;
+            transition: opacity .15s;
+        }
+        .play-badge:hover { opacity: .85; }
+        .play-badge svg { width: 22px; height: 22px; fill: #fff; }
+        .play-badge-text { display: flex; flex-direction: column; line-height: 1.2; }
+        .play-badge-text span:first-child { font-size: 10px; opacity: .8; }
+        .play-badge-text span:last-child { font-size: 15px; font-weight: 700; }
+
+        @media (max-width: 600px) {
+            .section { padding: 52px 16px; }
+            nav { padding: 0 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav>
+    <a href="#" class="nav-brand">
+        <div class="nav-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+        </div>
+        Ring Reminder
+    </a>
+    <a href="https://play.google.com/store/apps/details?id=com.jcat.ringreminder" class="nav-cta" target="_blank" rel="noopener">Get the app</a>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+    <div class="hero-badge">Free Android App · 7-day Pro trial</div>
+    <h1>Never miss a call because your phone was <span>silent</span></h1>
+    <p>Ring Reminder watches your ringer in the background and instantly alerts you when it's muted, vibrate-only, on Do Not Disturb, or too quiet to hear.</p>
+    <div class="hero-buttons">
+        <a href="https://play.google.com/store/apps/details?id=com.jcat.ringreminder" class="btn-primary" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 20.5v-17c0-.83 1-.93 1.4-.45l14 8.5c.38.23.38.77 0 1L4.4 21c-.4.47-1.4.33-1.4-.5z"/></svg>
+            Get it on Google Play
+        </a>
+        <a href="#how-it-works" class="btn-secondary">See how it works</a>
+    </div>
+</section>
+
+<!-- ── How it works ── -->
+<section class="section section-alt" id="how-it-works">
+    <div class="container">
+        <div class="section-label">How it works</div>
+        <h2 class="section-title">Always watching, never intrusive</h2>
+        <p class="section-sub">Ring Reminder runs quietly in the background. You only hear from it when something needs your attention.</p>
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <h3>Runs silently in background</h3>
+                <p>A lightweight foreground service monitors your ringer mode every 30 seconds. It uses virtually no battery and stays running even when the screen is off.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <h3>Detects a problem</h3>
+                <p>The moment your phone goes silent, vibrate-only, Do Not Disturb, or below your volume threshold — Ring Reminder notices immediately.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h3>Shows a floating alert</h3>
+                <p>A small coloured badge appears on your screen. Tap it to expand — you can unmute instantly without leaving whatever you're doing.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <h3>You stay in control</h3>
+                <p>Snooze the alert, schedule unmute for later, or just dismiss it. Ring Reminder works with you, not against you.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Features ── -->
+<section class="section" id="features">
+    <div class="container">
+        <div class="section-label">Features</div>
+        <h2 class="section-title">Everything you need, nothing you don't</h2>
+        <p class="section-sub">Thoughtfully built features that solve the real problem — missed calls — without bloat.</p>
+        <div class="features">
+
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                </div>
+                <h3>Floating overlay badge</h3>
+                <p>A small badge sits over any app showing your current ringer state. Tap to expand for full controls — unmute, snooze, schedule — without switching apps.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M4 triggers: silent, vibrate, DND, low volume M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/><path d="M18.92 5.01C17.94 3.8 16.58 3 15 3h-1l-2 2h3c1.65 0 3 1.35 3 3v8.17l1.99 1.99C20.58 17.1 21 16.1 21 15V8c0-1.2-.38-2.31-1.08-3.19zM3.27 4.01L2 5.27 3 6.27V15c0 2.21 1.79 4 4 4h7.73l2 2 1.27-1.27-14.73-14.72z"/></svg>
+                </div>
+                <h3>Four alert triggers</h3>
+                <p>Choose which conditions to watch: <strong>Silent mode</strong>, <strong>Vibrate-only</strong>, <strong>Do Not Disturb</strong>, and <strong>Low ringer volume</strong> (configurable threshold). Enable just the ones that matter to you.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+                </div>
+                <h3>Snooze alerts</h3>
+                <p>Heading into a meeting? Snooze for 15 minutes, 30 minutes, an hour, or until you manually change your ringer. Alerts resume automatically when the snooze ends.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+                </div>
+                <h3>Scheduled unmute</h3>
+                <p>Tap "Unmute in…" from the overlay to schedule your phone to unmute automatically — in 30 minutes, an hour, or any custom time. A notification lets you cancel if plans change.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+                </div>
+                <h3>Re-alert if still muted</h3>
+                <p>Enable repeat nudges so Ring Reminder reminds you again after 5, 10, 15, or 30 minutes if your phone is still in the wrong state — no more forgetting to re-enable it.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+                </div>
+                <h3>Home screen widget</h3>
+                <p>Add a small 1×1 or wide 2×1 widget to your home screen. It shows your ringer status at a glance and — when an alert is active — taps straight through to expand the overlay.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M17.66 7.93L12 2.27 6.34 7.93c-3.12 3.12-3.12 8.19 0 11.31C7.9 20.8 9.95 21.58 12 21.58c2.05 0 4.1-.78 5.66-2.34 3.12-3.12 3.12-8.19 0-11.31zm-5.66 11.4c-1.6 0-3.11-.62-4.24-1.76C6.62 16.43 6 14.92 6 13.32c0-1.6.62-3.11 1.76-4.24l4.24-4.23 4.24 4.24c1.13 1.13 1.76 2.64 1.76 4.24 0 1.6-.62 3.11-1.76 4.24-1.13 1.13-2.64 1.75-4.24 1.75z"/></svg>
+                </div>
+                <h3>Quick Settings tile</h3>
+                <p>A Quick Settings tile in your notification shade shows current status and lets you jump straight into the app — handy when you need a quick check without unlocking.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                </div>
+                <h3>Haptic feedback</h3>
+                <p>Optional short vibration pulse confirms the moment you unmute — a satisfying tactile confirmation that your ringer is back on.</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ── Pro ── -->
+<section class="section section-alt" id="pro">
+    <div class="container">
+        <div class="section-label">Pricing</div>
+        <h2 class="section-title">Free to use. Pro for power users.</h2>
+        <p class="section-sub">The core features are free forever. Pro unlocks extras for people who want more control.</p>
+
+        <div class="plans">
+            <div class="plan">
+                <div class="plan-label">Free</div>
+                <h3>Ring Reminder</h3>
+                <p class="plan-price">Always free</p>
+                <ul>
+                    <li>Silent, vibrate, DND, low volume detection</li>
+                    <li>Floating overlay badge</li>
+                    <li>Instant unmute from overlay</li>
+                    <li>Snooze alerts</li>
+                    <li>Re-alert if still muted</li>
+                    <li>Haptic feedback on unmute</li>
+                    <li>Home screen widget (small &amp; large)</li>
+                    <li>Quick Settings tile</li>
+                </ul>
+                <a href="https://play.google.com/store/apps/details?id=com.jcat.ringreminder" class="plan-cta plan-cta-free" target="_blank" rel="noopener">Download free</a>
+            </div>
+
+            <div class="plan plan-pro">
+                <div class="plan-label">Pro</div>
+                <h3>Ring Reminder Pro</h3>
+                <p class="plan-price">One-time purchase · 7-day free trial included</p>
+                <ul>
+                    <li>Everything in Free</li>
+                    <li>Alert schedule — only alert during set hours</li>
+                    <li>Scheduled unmute ("Unmute in X minutes")</li>
+                    <li>Daily auto-unmute at a set time</li>
+                    <li>Per-app suppression — pause alerts in selected apps</li>
+                    <li>8 overlay themes</li>
+                    <li>Light / dark / system panel background</li>
+                    <li>Widget colours follow your theme</li>
+                    <li>Lock screen alert visibility</li>
+                    <li>Battery saver mode</li>
+                    <li>Pulse icon when call arrives while muted</li>
+                </ul>
+                <a href="https://play.google.com/store/apps/details?id=com.jcat.ringreminder" class="plan-cta plan-cta-pro" target="_blank" rel="noopener">Try Pro free for 7 days</a>
+            </div>
+        </div>
+
+        <div class="trial-banner">
+            <span>🎉</span>
+            <p><strong>7-day free trial included.</strong> Every new install gets a full 7-day trial of all Pro features — no payment required upfront. Upgrade at any time to keep access.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── Permissions ── -->
+<section class="section" id="permissions">
+    <div class="container">
+        <div class="section-label">Permissions explained</div>
+        <h2 class="section-title">We only ask for what we need</h2>
+        <p class="section-sub">Ring Reminder is upfront about every permission it requests and why. Your data never leaves your device.</p>
+
+        <div class="perms">
+            <div class="perm">
+                <div class="perm-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                </div>
+                <div>
+                    <h4>Show notifications</h4>
+                    <p>Required to display the persistent monitoring notification and alert heads-up notifications. The persistent notification is kept at minimum priority so it doesn't interrupt you.</p>
+                </div>
+            </div>
+            <div class="perm">
+                <div class="perm-icon">
+                    <svg viewBox="0 0 24 24"><path d="M4 6h18V4H4c-1.1 0-2 .9-2 2v11H0v3h14v-3H4V6zm19 2h-6c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 9h-4v-7h4v7z"/></svg>
+                </div>
+                <div>
+                    <h4>Draw over other apps</h4>
+                    <p>Allows Ring Reminder to show the floating overlay badge on top of any app. Without this, the alert can only appear as a standard notification. Your screen content is never read or captured.</p>
+                </div>
+            </div>
+            <div class="perm">
+                <div class="perm-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <div>
+                    <h4>Do Not Disturb access</h4>
+                    <p>Lets Ring Reminder detect when DND is active and turn it off when you tap "Unmute". Without this, it can alert you about DND but cannot automatically disable it for you.</p>
+                </div>
+            </div>
+            <div class="perm">
+                <div class="perm-icon">
+                    <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+                </div>
+                <div>
+                    <h4>Battery optimisation exempt</h4>
+                    <p>Prevents Android from suspending the monitoring service when your phone is idle. Without this, the service can be killed by the system after a few minutes of screen-off time.</p>
+                </div>
+            </div>
+            <div class="perm">
+                <div class="perm-icon">
+                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                </div>
+                <div>
+                    <h4>Notification access <em>(optional — Pro)</em></h4>
+                    <p>Used only to detect incoming calls so the overlay badge can pulse when a call arrives while your phone is muted. Ring Reminder <strong>never reads the content</strong> of your notifications.</p>
+                </div>
+            </div>
+            <div class="perm">
+                <div class="perm-icon">
+                    <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                </div>
+                <div>
+                    <h4>App usage access <em>(optional — Pro)</em></h4>
+                    <p>Used only for the per-app suppression feature — to detect which app is in the foreground so alerts can be paused while you're using selected apps. No browsing history or personal data is accessed.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section class="section section-alt" id="faq">
+    <div class="container">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Common questions</h2>
+        <p class="section-sub" style="margin-bottom: 32px;">Can't find an answer? Email us at <a href="mailto:ringreminder@thecrazycat.com">ringreminder@thecrazycat.com</a></p>
+
+        <div class="faqs">
+            <details>
+                <summary>Will Ring Reminder drain my battery?</summary>
+                <div class="faq-body">Ring Reminder checks your ringer state every 30 seconds. This is a very lightweight operation — it reads a single system value and does nothing if nothing has changed. In practice, battery impact is negligible. Battery saver mode (Pro) reduces this to every 120 seconds when your battery drops below 20%.</div>
+            </details>
+            <details>
+                <summary>Does it work when my screen is off?</summary>
+                <div class="faq-body">Yes. Ring Reminder runs as a foreground service, which Android keeps alive in the background. We recommend granting the battery optimisation exemption during setup — this prevents the system from suspending the service when the phone has been idle for a while.</div>
+            </details>
+            <details>
+                <summary>Why does it need to draw over other apps?</summary>
+                <div class="faq-body">The floating overlay badge is Ring Reminder's main interface. It sits on top of whatever you're doing so you can see and fix your ringer state without switching apps. If you prefer not to grant this permission, alerts will still appear as standard notifications — you just won't get the floating badge.</div>
+            </details>
+            <details>
+                <summary>Can I set it to only alert during certain hours?</summary>
+                <div class="faq-body">Yes — the Alert Schedule feature (Pro) lets you define a window of hours during which alerts are active. Outside those hours, Ring Reminder continues monitoring in the background but won't show alerts or notifications.</div>
+            </details>
+            <details>
+                <summary>What's the difference between the Free and Pro versions?</summary>
+                <div class="faq-body">Free covers the essentials: all four alert triggers, the floating badge, snooze, repeat nudge, haptic feedback, widget, and QS tile. Pro adds scheduling, scheduled unmute, daily auto-unmute, per-app suppression, 8 overlay themes, lock screen alerts, battery saver, and the pulse-on-call feature. Every install gets a 7-day free trial of Pro.</div>
+            </details>
+            <details>
+                <summary>Is the Pro upgrade a subscription?</summary>
+                <div class="faq-body">No — it's a one-time purchase. Pay once, own it forever. There are no recurring charges.</div>
+            </details>
+            <details>
+                <summary>I bought Pro on another device — how do I restore it?</summary>
+                <div class="faq-body">Open the app, go to Settings → Ring Reminder Pro, and tap the <strong>Restore</strong> button. This re-queries your Google Play purchase history and restores Pro access if your purchase is found on your account.</div>
+            </details>
+            <details>
+                <summary>Will the service restart after I update the app?</summary>
+                <div class="faq-body">Yes. Ring Reminder automatically restarts its monitoring service after an app update is installed, as long as you had it enabled. You don't need to do anything.</div>
+            </details>
+            <details>
+                <summary>Does Ring Reminder read my notifications or calls?</summary>
+                <div class="faq-body">No. Ring Reminder only checks the ringer mode state — a single system value. The optional notification access permission (for pulse-on-call) only detects that a call-category notification arrived; it never reads the caller's name, number, or any notification content. The optional app usage permission only reads which app is in the foreground; it never tracks browsing history or personal activity.</div>
+            </details>
+        </div>
+    </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="section" style="background: linear-gradient(135deg, var(--blue-dark), var(--blue)); color: #fff; text-align: center;">
+    <div class="container">
+        <h2 style="font-size: clamp(22px, 4vw, 36px); font-weight: 800; margin-bottom: 14px;">Ready to stop missing calls?</h2>
+        <p style="font-size: 17px; opacity: .85; margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto;">Free to download. 7-day Pro trial included. No sign-up required.</p>
+        <a href="https://play.google.com/store/apps/details?id=com.jcat.ringreminder" class="play-badge" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M3 20.5v-17c0-.83 1-.93 1.4-.45l14 8.5c.38.23.38.77 0 1L4.4 21c-.4.47-1.4.33-1.4-.5z"/></svg>
+            <div class="play-badge-text">
+                <span>Get it on</span>
+                <span>Google Play</span>
+            </div>
+        </a>
+    </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+    <div class="footer-brand">Ring Reminder</div>
+    <div class="footer-links">
+        <a href="https://play.google.com/store/apps/details?id=com.jcat.ringreminder" target="_blank" rel="noopener">Google Play</a>
+        <a href="mailto:ringreminder@thecrazycat.com">ringreminder@thecrazycat.com</a>
+    </div>
+    <p>© 2026 Ring Reminder. Made with care for Android.</p>
+</footer>
+
+</body>
+</html>

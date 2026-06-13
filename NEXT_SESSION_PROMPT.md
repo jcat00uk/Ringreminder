@@ -2,7 +2,7 @@
 
 ## Project
 
-Native Android Kotlin app (`com.jcat.ringreminder`, minSdk 26, targetSdk 35). AndroidX + Material Components + Play Billing 7.0. ViewBinding + BuildConfig enabled. Gradle 8.8, AGP 8.2.2, Java 21 target (system has Java 25 — daemon warning on build is harmless).
+Native Android Kotlin app (`com.jcat.ringreminder`, minSdk 26, targetSdk 35). AndroidX + Material Components + Play Billing 7.0. ViewBinding + BuildConfig enabled. Gradle 8.14.5, AGP 8.7.3, Kotlin 2.0.21 (K2), Java 11 target (system has Java 25 — daemon warning on build is harmless).
 
 Working directory: `s:\Coding\Ringreminder`
 
@@ -14,7 +14,7 @@ Or use `1build.bat` for the full menu (debug APK / release APK / release AAB wit
 
 ---
 
-## Current state (after Session 6)
+## Current state (after Session 8)
 
 ### Core service
 `RingerMonitorService` — foreground service, 30s polling + broadcasts. Evaluates SILENT/DND/VIBRATE/LOW_VOLUME. Owns overlay, notifications, QS tile, widget updates. Handles:
@@ -113,13 +113,15 @@ All dialogs set `window?.setType(TYPE_APPLICATION_OVERLAY)` — required for Ser
 
 Row contains two buttons: **Restore** (TextButton, calls `BillingManager.restorePurchases()`, toasts success/not-found) and **Upgrade to Pro** (filled). Both hidden once purchased.
 
-**Known billing gap**: upgrade row (and Restore button) hidden when `hasPurchasedPro=true` — Pro users have no visible way to trigger a billing re-check. `onBillingServiceDisconnected()` also does nothing — if connection drops, `refresh()` silently skips. Both to be fixed.
+**Verify purchase row**: visible when `hasPurchasedPro=true` and dev mode off. Shows "Pro unlocked — thank you!" with a "Verify purchase" button that calls `restorePurchases()`. If Play Store no longer confirms the purchase, `setupProFeatures()` re-runs to show the upgrade row.
+
+**Billing reconnect**: `onBillingServiceDisconnected()` retries via `connect()` with exponential backoff (1s/2s/4s, max 3 attempts). `destroy()` cancels any pending reconnect via `handler.removeCallbacksAndMessages(null)`.
 
 **Debug build note**: The upgrade row and trial text are still visible in debug builds (controlled by `hasPurchasedPro`, not `isPro`). This is intentional — it previews the non-Pro UI. All Pro features are fully unlocked regardless because `isPro` always returns `true` when `BuildConfig.DEBUG = true`.
 
 ### Developer Panel (hidden diagnostic mode)
 
-Activated by **tapping the "RING REMINDER PRO" section header 7 times** in Settings → toast "Developer mode enabled". Deactivated by **long-pressing the same header** → toast "Developer mode disabled". State persisted via `prefs.devModeEnabled`.
+Activated by **tapping the "RING REMINDER PRO" section header 7 times** → key dialog appears. Deactivated via **"Disable Dev" button** in the panel. State persisted via `prefs.devModeEnabled` + `prefs.devModeActive` (encrypted).
 
 Panel appears at the bottom of Settings (orange border, `dev_panel_card`). Shows:
 
@@ -134,8 +136,11 @@ Panel appears at the bottom of Settings (orange border, `dev_panel_card`). Shows
 | Permissions | Notifications (API 33+), Overlay, DND, Battery exempt, Notif listener, Usage stats |
 
 **Buttons**:
-- **Expire Trial** (tap) — sets `trialStartMs` to 8 days ago → `isInTrial = false` immediately
+- **Expire Trial** — sets `trialStartMs` to 8 days ago → `isInTrial = false` immediately
+- **Toggle Pro** — flips `hasPurchasedPro`; calls `notifyService()` + refreshes UI
+- **Sim Non-Pro** — toggles `devSimulateNonPro`; bypasses `BuildConfig.DEBUG` in `isPro` so non-Pro UI is testable in debug builds
 - **Refresh** (tap) — re-reads all values; **(hold 5 seconds)** → resets `trialStartMs` to now → trial active again
+- **Disable Dev** — clears `devModeActive` + `devModeEnabled` + `devSimulateNonPro`, hides panel
 
 **Billing diagnosis flow**: Tap "Expire Trial", then read `isPro` in the panel:
 - `isPro = false` → billing already cleared `hasPurchasedPro` (refund propagated); trial was keeping Pro alive
@@ -151,6 +156,8 @@ Now includes all 6 permissions, each with status text and a Fix button:
 6. App usage access (for per-app suppression)
 
 POST_NOTIFICATIONS row is hidden on Android < 13.
+
+**Collapsible section**: the "PERMISSIONS" header is tappable (chevron ▼/▶). Auto-collapses when all permissions granted; auto-expands when any are missing. When collapsed: granted rows hidden, ungranted rows (red tint + Fix button) remain visible. Summary text shows "All permissions granted" or "X permissions need attention". `permissionsExpanded` delegates to `prefs.uiPermissionsExpanded` (persisted). `permGranted` maps each row view → granted bool, built in `updatePermissionsSection()` and consumed by `applyPermissionsExpanded()`.
 
 ### Android 15 edge-to-edge
 `app/src/main/res/values-v35/` — theme override to handle edge-to-edge enforcement on Android 15+.
@@ -170,7 +177,7 @@ POST_NOTIFICATIONS row is hidden on Android < 13.
 | `AppSuppressActivity.kt` | Per-app suppression app picker |
 | `QuickSettingsTile.kt` | QS tile — muted bell when alert, plain bell otherwise |
 | `ReminderWidget.kt` | Widget provider (small 1×1 + large 2×1) — theme colours; tap expands overlay when alert active |
-| `BootReceiver.kt` | Auto-start on boot if `masterEnabled` |
+| `BootReceiver.kt` | Auto-start on boot + auto-restart after app update (`MY_PACKAGE_REPLACED`) if `masterEnabled` |
 | `OnboardingActivity.kt` | Permission wizard |
 
 ---
@@ -196,17 +203,116 @@ POST_NOTIFICATIONS row is hidden on Android < 13.
 
 ## Next session — start here
 
-1. **AGP upgrade** — bump AGP `8.2.2` → `8.7.x` and Kotlin `1.9.22` → `2.0.x`; run build and fix any K2 compiler complaints; then remove `android.suppressUnsupportedCompileSdk=35` from `gradle.properties` and `lint { checkReleaseBuilds false }` from `app/build.gradle`
-2. **Billing reconnect** — fix `onBillingServiceDisconnected()` to reconnect + retry, and add a "Verify purchase" option visible to Pro users (upgrade row is hidden when `hasPurchasedPro=true` so there's no manual re-check available). Note: dev panel's billing status field helps diagnose connection state.
+All near-term roadmap items are complete. Pick from the longer-horizon list or ship to Play Store.
+
+---
+
+## Completed this session (Session 8)
+
+### AGP / Kotlin upgrade
+- AGP `8.2.2` → `8.7.3`, Kotlin `1.9.22` → `2.0.21` (K2 compiler, zero complaints)
+- Java target `1.8` → `11`
+- Removed `android.suppressUnsupportedCompileSdk=35` from `gradle.properties`
+- Removed `lint { checkReleaseBuilds false }` from `app/build.gradle`
+
+### Billing reconnect
+- `BillingManager.connect()` extracted; `onBillingServiceDisconnected()` retries with exponential backoff (1s/2s/4s, max 3 attempts)
+- `destroy()` cancels pending reconnect handler
+- **Verify purchase row** added to Settings — visible only when `hasPurchasedPro=true` and dev mode off; calls `restorePurchases()` and shows result toast
+
+### Developer mode fixes
+- Activation simplified: 7 taps on "RING REMINDER PRO" header → key dialog (removed broken second-element step)
+- **Disable Dev** button added to dev panel (replaces fiddly 5s long-press)
+- **Sim Non-Pro** button — toggles `devSimulateNonPro` pref, bypasses `BuildConfig.DEBUG` override in `isPro` so non-Pro UI is testable in debug builds
+- **Toggle Pro** button now calls `notifyService()` so service picks up the change
+- `devSimulateNonPro` shown in dev panel Pro Status section
+
+### Permissions section
+- Section header is now collapsible (chevron ▼/▶, tap to toggle)
+- Auto-collapses when all permissions granted; auto-expands when any are missing
+- Collapsed state: granted rows hidden, ungranted rows remain visible with red tint
+- Summary text shows "All permissions granted" or "X permissions need attention"
+- Each ungranted row gets subtle red background tint (`#18FF0000`)
+
+### Session 8
+
+#### Developer panel improvements
+- Header row now has a chevron toggle (orange, `img_dev_chevron`) — tapping `layout_dev_header` collapses/expands `layout_dev_content` (info text + buttons)
+- Collapse state persisted via `prefs.uiDevInfoExpanded` — survives activity restarts
+- Buttons split into two rows (3 + 2) with `layout_weight="1"` — all fit portrait width
+
+#### Permissions collapse state persisted
+- `permissionsExpanded` is now a delegating property → `prefs.uiPermissionsExpanded` (Boolean, default true)
+- `devInfoExpanded` is now a delegating property → `prefs.uiDevInfoExpanded` (Boolean, default true)
+- Both added to `PrefsHelper` as `uiPermissionsExpanded` / `uiDevInfoExpanded`
+
+#### Service restarts after app update
+- `BootReceiver` now handles `Intent.ACTION_MY_PACKAGE_REPLACED` in addition to `BOOT_COMPLETED`
+- Shared via `startServiceIfEnabled()` helper — starts service only if `masterEnabled`
+- Manifest updated: `MY_PACKAGE_REPLACED` added to intent-filter; receiver set to `exported="false"` (correct — system delivers directly to own package)
+
+#### Start service button fix
+- `btnStartService` now hides the warning banner immediately (optimistic) instead of calling `updateUI()` which read `isRunning` before the service had started
+- `onResume` wraps `updateUI()` in `binding.root.post {}` so it runs after the service's `onStartCommand` has set `isRunning = true`
+
+#### Widget preview drawables improved
+- `preview_widget_small.xml` — full-size bell on blue rounded card, green tick circle in bottom-right
+- `preview_widget_large.xml` — bell with green dot indicator left, title + status pill shapes right; matches actual 2×1 layout
+- Both already wired via `android:previewImage` in `widget_info_small/large.xml`
+
+#### Play Store feature graphic
+- `playstore_feature_graphic.png` generated at 1024×500px — brand blue background, white bell icon, "Ring Reminder" title and tagline
+
+---
+
+## Completed this session (Session 9)
+
+### Code quality & bug fixes (all compile-verified)
+- **Dead `isPro` setter removed** — `PrefsHelper.isPro` changed from `var` to `val`; setter silently mapped to `hasPurchasedPro` and was a footgun
+- **Backup rules added** — `backup_rules.xml` + `data_extraction_rules.xml` exclude `is_pro` and `trial_start_ms` from Google Drive backup; `EncryptedSharedPreferences` file excluded entirely; both wired in `AndroidManifest.xml`
+- **Volume threshold chips dim when trigger off** — `layout_threshold` wrapper added to `activity_settings.xml`; `refreshVolumeThresholdState()` mirrors `refreshNudgeIntervalState()` pattern
+- **Restore volume chips dim when fix-volume off** — `layout_restore_level` wrapper added; `refreshRestoreVolumeState()` wired to switch listener
+- **MainActivity checks all 6 permissions** — added notification listener + usage stats to `checkPermissions()`; banner now catches all missing permissions
+- **Permissions auto-collapse only on first load** — `firstPermissionsLoad` flag prevents auto-collapse overriding user's manual expand on subsequent `onResume` calls
+- **SCHEDULE_EXACT_ALARM permission row** — Android 12+ row added to Settings permissions section (layout + strings + `updatePermissionsSection()` logic + `permGranted` map); Fix button opens `ACTION_REQUEST_SCHEDULE_EXACT_ALARM`
+- **Banner deep-links to permissions section** — `SCROLL_PERMISSIONS` constant added to `SettingsActivity`; `btnReviewPermissions` in MainActivity passes this extra; `layoutPermissionsHeader` scroll target added to `onCreate` `when` block
+- **24h time format respects device locale** — `formatTime()` helper uses `DateFormat.getTimeFormat(context)`; all three `TimePickerDialog` constructors use `DateFormat.is24HourFormat(this)`
+- **`notifyService()` dirty flag** — `settingsChanged` flag set by new `markChanged()` helper; `onPause` only sends `ACTION_REFRESH` when something actually changed, preventing spurious refresh on every permission-screen navigation
+- **`startRingerService()` deduplicated** — extracted to `ServiceExt.kt` as a `Context` extension; removed identical copy from both `MainActivity` and `SettingsActivity`
+- **`BillingManager` app-scoped singleton** — `RingReminderApp : Application` created; `billingManager` property is `lazy`; both activities reference it via `(application as RingReminderApp).billingManager`; no more two simultaneous BillingClients; `onDestroy` lifecycle calls removed from activities
 
 ---
 
 ## Roadmap (future sprints, do not implement yet)
 
-### Near-term
-- **Widget preview image** — supply proper `previewImage` drawable for widget picker
+### Near-term polish (recommended order)
+
+**1. Accessibility content descriptions** *(Easy, ~30 min)*
+The chevron `ImageView`s (`img_permissions_chevron`, `img_dev_chevron`) and any icon-only buttons in the overlay badge lack `android:contentDescription`. Affects TalkBack and Play Store accessibility review. Add `contentDescription` in layout XML only — no code changes needed.
+
+**2. Extract `OverlayBadgeManager` colour lookup** *(Medium, ~1 hr)*
+`SettingsActivity.kt:329` — `val paletteHelper = OverlayBadgeManager(this, {}, {})` constructs a full overlay manager just to call `conditionColor()`. Move the colour-mapping logic to a companion object/top-level function; delete the manager construction.
+
+**3. `MainActivity` status card should read from service** *(Medium, ~1 hr)*
+`MainActivity.kt:82` — `updateUI()` creates a fresh `RingerStateEvaluator` independently of the service. If the service just unmuted 50ms ago the card could show a stale alert. Use `RingerMonitorService.lastResult` when service is running; fall back to direct evaluation only when stopped.
+
+**4. Add retry/feedback on failed billing query** *(Medium, ~1 hr)*
+`BillingManager.kt:65` — Non-OK response codes on `queryPurchasesAsync` are silently dropped. On user-triggered `restorePurchases`, toast a "Couldn't verify purchase — check your connection" message when result is non-OK. Optionally retry once after a short delay.
+
+**5. Dev panel deduplicates permission checks** *(Medium, ~1 hr)*
+`SettingsActivity.kt` `refreshDevPanel()` re-queries all 6 permissions inline (lines 710–716). Extract permission state into a small data class or function shared with `updatePermissionsSection()` to avoid drift.
+
+**6. `hasPurchasedPro` in plain SharedPreferences** *(Medium–Hard, ~2 hrs)*
+`PrefsHelper.kt:95` — Move `is_pro` to `securePrefs`. Requires a one-time migration on first launch: read from plain prefs → write to secure → delete old key. Without migration, existing paid users would lose Pro on first update.
+
+**7. Visual feedback when master toggle is off** *(Medium–Hard, ~2 hrs)*
+When `masterEnabled = false`, Pro settings (schedule, auto-fix, suppression) remain fully interactive. Add an alpha/enabled pass over the Pro card whenever the master switch changes — similar to the existing `refreshNudgeIntervalState()` pattern but wrapping the entire Pro section.
+
+**8. Migrate `PhoneStateListener` to `TelephonyCallback`** *(Medium–Hard, ~2–3 hrs)*
+`RingerMonitorService.kt:25` — `PhoneStateListener` is deprecated (API 31). Migrate to `TelephonyCallback` with an API 31 guard and `PhoneStateListener` fallback for older devices. Low urgency until target SDK 36 enforcement.
 
 ### Longer horizon
 - **Alert profiles** — named trigger presets (Work/Gym/Sleep), switch from QS tile
 - **Per-app suppression** — future: AccessibilityService for instant detection if UsageStats too slow
 - **Mute history log** — in-app log of when/how long phone was muted
+- **Auto-unmute improvements** — smarter scheduling UI, calendar integration

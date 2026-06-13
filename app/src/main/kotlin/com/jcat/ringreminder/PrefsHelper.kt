@@ -121,9 +121,13 @@ class PrefsHelper(context: Context) {
         get() = securePrefs.getBoolean("dev_mode_active", false)
         set(v) = securePrefs.edit().putBoolean("dev_mode_active", v).apply()
 
-    var isPro: Boolean
-        get() = BuildConfig.DEBUG || hasPurchasedPro || isInTrial || devModeActive
-        set(v) { hasPurchasedPro = v }
+    var devSimulateNonPro: Boolean
+        get() = prefs.getBoolean("dev_simulate_non_pro", false)
+        set(v) = prefs.edit().putBoolean("dev_simulate_non_pro", v).apply()
+
+    val isPro: Boolean
+        get() = if (devSimulateNonPro) hasPurchasedPro || isInTrial
+                else BuildConfig.DEBUG || hasPurchasedPro || isInTrial || devModeActive
 
     // Scheduling
     var scheduleEnabled: Boolean
@@ -243,4 +247,12 @@ class PrefsHelper(context: Context) {
     var devModeEnabled: Boolean
         get() = prefs.getBoolean("dev_mode_enabled", false)
         set(v) = prefs.edit().putBoolean("dev_mode_enabled", v).apply()
+
+    var uiPermissionsExpanded: Boolean
+        get() = prefs.getBoolean("ui_permissions_expanded", true)
+        set(v) = prefs.edit().putBoolean("ui_permissions_expanded", v).apply()
+
+    var uiDevInfoExpanded: Boolean
+        get() = prefs.getBoolean("ui_dev_info_expanded", true)
+        set(v) = prefs.edit().putBoolean("ui_dev_info_expanded", v).apply()
 }

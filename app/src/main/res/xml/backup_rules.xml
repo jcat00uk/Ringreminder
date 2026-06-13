@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude purchase/trial state — always re-verified against Play Store on launch -->
+    <exclude domain="sharedpref" path="ring_reminder_prefs.xml" key="is_pro" />
+    <exclude domain="sharedpref" path="ring_reminder_prefs.xml" key="trial_start_ms" />
+    <!-- Exclude encrypted prefs entirely — EncryptedSharedPreferences keys don't survive backup/restore -->
+    <exclude domain="sharedpref" path="ring_reminder_secure_prefs.xml" />
+</full-backup-content>
